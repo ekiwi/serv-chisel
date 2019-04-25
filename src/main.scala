@@ -4,8 +4,8 @@
 // author: Kevin Laeufer <laeufer@cs.berkeley.edu>
 // based on Olof Kindgren's implementation in Verilog
 
-object main {
-  def main(args: Array[String]): Unit = {
-    println("Hello World!")
-  }
+import chisel3._
+
+object main extends App {
+  Driver.execute(args, () => new serv_alu())
 }
