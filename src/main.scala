@@ -30,4 +30,17 @@ object main extends App {
   )
 
   Driver.execute(args, Adapter(() => new serv_alu(), "clk", "i_rst", m))
+
+  // make add
+  Driver.execute(args, Adapter(() => new ser_add(), "clk", "rst"))
+
+  Driver.execute(args, Adapter(() => new ser_lt(), "i_clk", "TODO_remove", Map(
+    "a" -> "i_a", "b" -> "i_b", "clr" -> "i_clr", "sign" -> "i_sign", "q" -> "o_q"
+  )))
+
+  Driver.execute(args, Adapter(() => new ser_shift(), "i_clk", "i_rst", Map(
+    "load" -> "i_load", "shamt" -> "i_shamt", "shamt_msb" -> "i_shamt_msb",
+    "signbit" -> "i_signbit", "right" -> "i_right", "done" -> "o_done",
+    "d" -> "i_d", "q" -> "o_q"
+  )))
 }
