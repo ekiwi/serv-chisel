@@ -6,13 +6,13 @@ import chisel3._
 import chisel3.experimental.{RawModule, DataMirror, Direction}
 
 object Adapter {
-  def apply(m: () => Module, clock: String, reset: String, io: Map[String, String]): () => RawModule = {
+  def apply(m: () => Module, clock: String, reset: String, io: Map[String, String] = Map()): () => RawModule = {
     val rename = (n: String) => {
       if(n.startsWith("io.")) {
         val needle = n.substring(3)
         io.get(needle) match {
           case Some(name) => name
-          case None => n.replace(".", "_")
+          case None => needle.replace(".", "_")
         }
       } else {
         n match {
@@ -36,7 +36,7 @@ class AdapterModule(makeModule: () => Module, rename: String => String, invertRe
 
   val m = withClockAndReset(clock, reset) { Module(makeModule()) }
 
-  suggestName(s"${m.name}_wrapper") // TODO: why does this not work?
+  override val desiredName : String = s"${m.name}_wrapper"
 
   private def declareAndConnect(data: Element) = {
     val isInput = DataMirror.directionOf(data) == Direction.Input
