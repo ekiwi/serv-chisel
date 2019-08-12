@@ -187,7 +187,7 @@ class ser_shift extends Module {
     cnt := cnt + 1.U
   }
 
-  io.done := cnt.tail(5) === io.shamt
+  io.done := cnt(4,0) === io.shamt
   io.q := Mux(io.right =/= wrapped, io.d, signbit)
 
 }
