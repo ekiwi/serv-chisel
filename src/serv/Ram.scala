@@ -8,6 +8,7 @@ package serv
 
 import chisel3._
 import chisel3.util._
+import utils._
 
 class WritePortIO extends Bundle {
   val addr = Input(UInt(6.W))
@@ -54,10 +55,32 @@ class RegisterFileInterface(width: Int, csrRegs: Int = 4) extends Module {
   val writeTrigger = if(width == 2) {
     (!writeCount(0), writeCount(0))
   } else {
-    val mask = (1 << log2Width) - 1
-    val trigger0 = (writeCount.tail(log2Width) == (mask - 1).U)
-    val writeTriggerBuffer =
+    throw new RuntimeException(s"width $width != 2 is not supported yet")
   }
+
+  io.ram.writeData := Mux(writeTrigger._2, writeData1Buffer, io.rf.write0.data ## writeData0Buffer)
+  val writeAddress = Mux(writeTrigger._2, io.rf.write1.addr, io.rf.write0.addr)
+  io.ram.writeAddr := writeAddress ## writeCount.head(log2Width)
+  io.ram.writeEnable := writeGo && ((writeTrigger._1 && writeEnable0Buffer) || (writeTrigger._2 && writeEnable1Buffer))
+
+  writeData0Buffer := io.rf.write0.data ## writeData0Buffer.tail(width-1).head(width-2)
+  writeData1Buffer := io.rf.write1.data ## writeData1Buffer.tail(width-0).head(width-1)
+
+  when(writeGo) { writeCount := writeCount + 1.U }
+  when(io.rf.writeRequest) { writeGo := true.B }
+  when(writeCount === 0.U) { writeGo := false.B }
+
+  // Read Side
+  val readCount = Reg(UInt(5.W))
+  val readTrigger0 = readCount.split(log2Width).msb === 1.U
+  val readTrigger1 = RegNext(readTrigger0)
+  val readAddress = Mux(readTrigger0, io.rf.read1.addr, io.rf.read0.addr)
+
+  io.ram.readAddr := readAddress ## readCount.split(log2Width).lsb
+
+  val readData0Buffer = Reg(UInt(width.W))
+  readData0Buffer := readData0Buffer.split(1).msb
+  val readData1Buffer = Reg(UInt((width - 1).W))
 
 }
 
