@@ -3,7 +3,7 @@
 // author: Kevin Laeufer <laeufer@cs.berkeley.edu>
 
 import chisel3._
-import chisel3.experimental.{RawModule, DataMirror, Direction}
+import chisel3.experimental.{DataMirror, Direction}
 
 object Adapter {
   def apply(m: () => Module, clock: String, reset: String, io: Map[String, String] = Map()): () => RawModule = {
