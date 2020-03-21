@@ -34,8 +34,8 @@ class RegisterFileIO extends Bundle {
 class RegisterFileInterface(width: Int, csrRegs: Int = 4) extends Module {
   val depth = 32 * (32 + csrRegs) / width
   val io = IO(new Bundle {
-    val ram = new RamIO(width, depth)
-    val rf = Flipped(new RegisterFileIO())
+    val ram = Flipped(new RamIO(width, depth))
+    val rf = new RegisterFileIO()
   })
 
   val log2Width = log2Ceil(width)
@@ -60,15 +60,15 @@ class RegisterFileInterface(width: Int, csrRegs: Int = 4) extends Module {
 
   io.ram.writeData := Mux(writeTrigger._2, writeData1Buffer, io.rf.write0.data ## writeData0Buffer)
   val writeAddress = Mux(writeTrigger._2, io.rf.write1.addr, io.rf.write0.addr)
-  io.ram.writeAddr := writeAddress ## writeCount.head(log2Width)
+  io.ram.writeAddr := writeAddress ## writeCount.split(log2Width).msb
   io.ram.writeEnable := writeGo && ((writeTrigger._1 && writeEnable0Buffer) || (writeTrigger._2 && writeEnable1Buffer))
 
-  writeData0Buffer := io.rf.write0.data ## writeData0Buffer.tail(width-1).head(width-2)
-  writeData1Buffer := io.rf.write1.data ## writeData1Buffer.tail(width-0).head(width-1)
+  writeData0Buffer := io.rf.write0.data ## writeData0Buffer.split(width-1).lsb.split(1).msb
+  writeData1Buffer := io.rf.write1.data ## writeData1Buffer.split(width-0).lsb.split(1).msb
 
   when(writeGo) { writeCount := writeCount + 1.U }
   when(io.rf.writeRequest) { writeGo := true.B }
-  when(writeCount === 0.U) { writeGo := false.B }
+  when(writeCount === "b11111".U) { writeGo := false.B }
 
   // Read Side
   val readCount = Reg(UInt(5.W))
@@ -76,12 +76,21 @@ class RegisterFileInterface(width: Int, csrRegs: Int = 4) extends Module {
   val readTrigger1 = RegNext(readTrigger0)
   val readAddress = Mux(readTrigger0, io.rf.read1.addr, io.rf.read0.addr)
 
-  io.ram.readAddr := readAddress ## readCount.split(log2Width).lsb
+  io.ram.readAddr := readAddress ## readCount.split(log2Width).msb
 
   val readData0Buffer = Reg(UInt(width.W))
   readData0Buffer := readData0Buffer.split(1).msb
+  when(readTrigger0) { readData0Buffer := io.ram.readData }
   val readData1Buffer = Reg(UInt((width - 1).W))
+  readData1Buffer := readData1Buffer.split(1).msb
+  when(readTrigger1) { readData1Buffer := io.ram.readData.split(1).msb }
 
+  io.rf.read0.data := readData0Buffer(0)
+  io.rf.read1.data := Mux(readTrigger1, io.ram.readData(0), readData1Buffer(0))
+
+  readCount := readCount + 1.U
+  when(io.rf.readRequest) { readCount := 0.U }
+  rgnt := RegNext(io.rf.readRequest, init = 0.U)
 }
 
 class RamIO(val dataWidth: Int, val depth: Int) extends Bundle {
@@ -94,8 +103,11 @@ class RamIO(val dataWidth: Int, val depth: Int) extends Bundle {
 
 class Ram(width: Int, depth: Int) extends Module {
   val io = IO(new RamIO(dataWidth=width, depth=depth))
-  val memory = SyncReadMem(depth, io.readData)
+  val memory = SyncReadMem(depth, chiselTypeOf(io.readData))
   when(io.writeEnable) { memory.write(io.writeAddr, io.writeData) }
   io.readData := memory.read(io.readAddr)
-  // FIXME: initialize RAM with zeros
+  // FIXME: initialize RAM with zeros (treadle does this by default, verilator might not)
+
+//  when(io.writeEnable) { printf(p"mem[0x${Hexadecimal(io.writeAddr)}] <- 0x${Hexadecimal(io.writeData)}\n") }
+//  printf(p"mem[0x${Hexadecimal(io.readAddr)}] -> 0x${Hexadecimal(io.readData)}\n")
 }
