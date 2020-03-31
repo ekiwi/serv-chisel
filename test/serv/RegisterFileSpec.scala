@@ -20,6 +20,8 @@ class RegisterFileSpec extends FlatSpec with ChiselScalatestTester  {
     clock.step()
     io.readRequest.poke(false.B)
     io.read0.addr.poke(addr.U)
+    clock.step()
+    clock.step()
     (0 to 31).foreach { ii =>
       val bit = (data >> ii) & 1
       io.read0.data.expect(bit.U)
@@ -34,6 +36,7 @@ class RegisterFileSpec extends FlatSpec with ChiselScalatestTester  {
     io.writeRequest.poke(false.B)
     io.write0.enable.poke(true.B)
     io.write0.addr.poke(addr.U)
+
     (0 to 31).foreach { ii =>
       val bit = (data >> ii) & 1
       io.write0.data.poke(bit.U)
@@ -49,11 +52,15 @@ class RegisterFileSpec extends FlatSpec with ChiselScalatestTester  {
     }
   }
 
-  it should "read value that was written to location 1 (width = 2)" in {
+  it should "read value that was written to a location (width = 2)" in {
+    val random = new scala.util.Random(0)
     test(new RegisterFileWrapper(2)).withAnnotations(WithVcd) { dut =>
-      val value = BigInt("1234", 16)
-      write2(dut.clock, dut.io, 1, value)
-      expectRead2(dut.clock, dut.io, 1, value)
+      (0 until 30).foreach {_ =>
+        val value = BigInt(32, random)
+        val addr = BigInt(5, random)
+        write2(dut.clock, dut.io, addr, value)
+        expectRead2(dut.clock, dut.io, addr, value)
+      }
     }
   }
 
