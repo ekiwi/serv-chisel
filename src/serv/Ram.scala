@@ -40,7 +40,8 @@ class RegisterFileInterface(width: Int, csrRegs: Int = 4) extends Module {
 
   val log2Width = log2Ceil(width)
 
-  val rgnt = RegInit(false.B)
+  val readRequestBuffer = RegNext(io.rf.readRequest, init = false.B)
+  val rgnt = RegNext(readRequestBuffer, init= false.B)
   io.rf.ready := rgnt || io.rf.writeRequest
 
   // Write Side
@@ -67,12 +68,12 @@ class RegisterFileInterface(width: Int, csrRegs: Int = 4) extends Module {
   writeData1Buffer := io.rf.write1.data ## writeData1Buffer.split(width-0).lsb.split(1).msb
 
   when(writeGo) { writeCount := writeCount + 1.U }
-  when(io.rf.writeRequest) { writeGo := true.B }
+  when(RegNext(io.rf.writeRequest)) { writeGo := true.B }
   when(writeCount === "b11111".U) { writeGo := false.B }
 
   // Read Side
   val readCount = Reg(UInt(5.W))
-  val readTrigger0 = readCount.split(log2Width).msb === 1.U
+  val readTrigger0 = readCount.split(log2Width).lsb === 1.U
   val readTrigger1 = RegNext(readTrigger0)
   val readAddress = Mux(readTrigger0, io.rf.read1.addr, io.rf.read0.addr)
 
@@ -90,7 +91,6 @@ class RegisterFileInterface(width: Int, csrRegs: Int = 4) extends Module {
 
   readCount := readCount + 1.U
   when(io.rf.readRequest) { readCount := 0.U }
-  rgnt := RegNext(io.rf.readRequest, init = 0.U)
 }
 
 class RamIO(val dataWidth: Int, val depth: Int) extends Bundle {
