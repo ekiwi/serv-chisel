@@ -7,8 +7,8 @@ package serv
 import org.scalatest._
 import chisel3.tester._
 import chisel3._
-import chisel3.tester.internal.WriteVcdAnnotation
 import chisel3.tester.experimental.TestOptionBuilder._
+import chiseltest.internal.WriteVcdAnnotation
 
 class RegisterFileSpec extends FlatSpec with ChiselScalatestTester  {
   val WithVcd = Seq(WriteVcdAnnotation)
