@@ -18,11 +18,13 @@ class AluSpec extends FlatSpec with ChiselScalatestTester  {
     io.count.enabled.poke(false.B)
     clock.step()
     io.count.enabled.poke(true.B)
+    io.ctrl.opBIsRS2.poke(true.B)
     conf(io.ctrl)
     (0 until 32).foreach { ii =>
       io.data.rs1.poke(((rs1 >> ii) & 1).U) // TODO: would like to be able to do UInt bit extract
       io.data.rs2.poke(((rs2 >> ii) & 1).U)
       io.data.rd.expect(((rd >> ii) & 1).U)
+      clock.step()
     }
   }
 
@@ -37,7 +39,7 @@ class AluSpec extends FlatSpec with ChiselScalatestTester  {
   it should "correctly execute add" in {
     val random = new scala.util.Random(0)
     test(new Alu).withAnnotations(WithVcd)  { dut =>
-      (0 until 100).foreach { _ =>
+      (0 until 40).foreach { _ =>
         val (rs1, rs2) = (BigInt(32, random), BigInt(32, random))
         val rd = (rs1 + rs2) & mask32
         calculate(dut.clock, dut.io, add, rs1, rs2, rd)
