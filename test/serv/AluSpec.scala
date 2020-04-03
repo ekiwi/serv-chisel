@@ -34,18 +34,30 @@ class AluSpec extends FlatSpec with ChiselScalatestTester  {
   def xor(ctrl: AluControlIO) { ctrl.boolOp.poke(BooleanOperation.Xor) ; ctrl.rdSelect.poke(Result.Bool) }
   def and(ctrl: AluControlIO) { ctrl.boolOp.poke(BooleanOperation.And) ; ctrl.rdSelect.poke(Result.Bool) }
 
-  val mask32 = (BigInt(1) << 32) - 1
+  private val mask32 = (BigInt(1) << 32) - 1
+  private def flipBits(value: BigInt) = ~value & mask32
 
-  it should "correctly execute add" in {
-    val random = new scala.util.Random(0)
-    test(new Alu).withAnnotations(WithVcd)  { dut =>
-      (0 until 40).foreach { _ =>
-        val (rs1, rs2) = (BigInt(32, random), BigInt(32, random))
-        val rd = (rs1 + rs2) & mask32
-        calculate(dut.clock, dut.io, add, rs1, rs2, rd)
+  case class TestConfig(name: String, ctrl: AluControlIO => Unit, sem: (BigInt, BigInt) => BigInt)
+
+  val tests = Seq(
+    TestConfig("add", add, (rs1,rs2) => (rs1 + rs2) & mask32),
+    TestConfig("sub", sub, (rs1,rs2) => (rs1 + flipBits(rs2) + 1) & mask32),
+    TestConfig("or",  or,  (rs1,rs2) => (rs1 | rs2) & mask32),
+    TestConfig("xor", xor, (rs1,rs2) => (rs1 ^ rs2) & mask32),
+    TestConfig("and", and, (rs1,rs2) => (rs1 & rs2) & mask32),
+  )
+
+  tests.foreach{ conf =>
+    it should "correctly execute " + conf.name in {
+      val random = new scala.util.Random(0)
+      test(new Alu).withAnnotations(WithVcd)  { dut =>
+        (0 until 40).foreach { _ =>
+          val (rs1, rs2) = (BigInt(32, random), BigInt(32, random))
+          val rd = conf.sem(rs1, rs2)
+          calculate(dut.clock, dut.io, conf.ctrl, rs1, rs2, rd)
+        }
       }
     }
   }
-
 
 }
