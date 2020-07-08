@@ -69,7 +69,7 @@ class RegisterFileSpec extends FlatSpec with ChiselScalatestTester  {
 
 class RegisterFileWrapper(width: Int, csrRegs: Int = 4) extends Module {
   val io = IO(new RegisterFileIO())
-  val interface = Module(new RegisterFileInterface(width, csrRegs))
+  val interface = Module(new RegisterFileRamInterface(width, csrRegs))
   val ram = Module(new Ram(width, interface.depth))
   io <> interface.io.rf
   ram.io <> interface.io.ram
