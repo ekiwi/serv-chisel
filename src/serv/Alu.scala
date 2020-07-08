@@ -63,6 +63,9 @@ class AluIO extends Bundle {
   val shiftDone = Output(Bool())
 }
 
+
+// TODO: inline shift register
+//       https://github.com/olofk/serv/commit/9606e3503d91840da2e6889d59cbc1caf6bd205d
 class Alu extends Module {
   val io = IO(new AluIO)
 
