@@ -51,6 +51,7 @@ class CountIO extends Bundle {
   val init = Input(Bool())
   val value = Input(UInt(5.W))
   val enabled = Input(Bool())
+  val count0 = Input(Bool())
   val done = Input(Bool())
 
 }
@@ -68,7 +69,7 @@ class Alu extends Module {
   val operandB = Mux(io.ctrl.opBIsRS2, io.data.rs2, io.data.imm)
 
   // ~b + 1 (negate B operand)
-  val plus1 = io.count.enabled & !RegNext(io.count.enabled)
+  val plus1 = io.count.count0
   val negativeBCarry = Reg(UInt(1.W))
   val negativeBCarryAndResult = ~operandB +& plus1 + negativeBCarry
   negativeBCarry := negativeBCarryAndResult(1)

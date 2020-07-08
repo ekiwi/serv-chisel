@@ -15,8 +15,10 @@ class AluSpec extends FlatSpec with ChiselScalatestTester  {
   val NoVcd = Seq()
 
   def calculate(clock: Clock, io: AluIO, conf: AluControlIO => Unit, rs1: BigInt, rs2: BigInt, rd: BigInt) {
+    io.count.count0.poke(false.B)
     io.count.enabled.poke(false.B)
     clock.step()
+    io.count.count0.poke(true.B)
     io.count.enabled.poke(true.B)
     io.ctrl.opBIsRS2.poke(true.B)
     conf(io.ctrl)
