@@ -107,6 +107,8 @@ class Ram(width: Int, depth: Int) extends Module {
   when(io.writeEnable) { memory.write(io.writeAddr, io.writeData) }
   io.readData := memory.read(io.readAddr)
   // FIXME: initialize RAM with zeros (treadle does this by default, verilator might not)
+  //        We can add a `MemoryScalarInitAnnotation` once we upgrade to Chisel 3.4.
+  //        https://github.com/freechipsproject/firrtl/pull/1645
 
 //  when(io.writeEnable) { printf(p"mem[0x${Hexadecimal(io.writeAddr)}] <- 0x${Hexadecimal(io.writeData)}\n") }
 //  printf(p"mem[0x${Hexadecimal(io.readAddr)}] -> 0x${Hexadecimal(io.readData)}\n")
