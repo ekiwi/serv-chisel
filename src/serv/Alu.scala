@@ -63,9 +63,6 @@ class AluIO extends Bundle {
   val shiftDone = Output(Bool())
 }
 
-
-// TODO: inline shift register
-//       https://github.com/olofk/serv/commit/9606e3503d91840da2e6889d59cbc1caf6bd205d
 class Alu extends Module {
   val io = IO(new AluIO)
 
@@ -87,16 +84,16 @@ class Alu extends Module {
   val resultAdd = addCarryNextAndResult(0)
 
   // shifter
-  val shiftAmountRegister = Module(new ShiftRegister(0.U(5.W)))
-  shiftAmountRegister.io.en := io.ctrl.shiftAmountEnable
-  shiftAmountRegister.io.d := Mux(io.ctrl.shiftRight, operandB, negativeB)
-  val shiftAmount = shiftAmountRegister.io.par ## shiftAmountRegister.io.q
-
+  val shiftAmountSerial = Mux(io.ctrl.shiftRight, operandB, negativeB)
+  val shiftAmount = Reg(UInt(5.W))
   val shift = Module(new SerialShift)
   shift.io.load := io.count.init
   shift.io.shiftAmount := shiftAmount
   val shiftAmountMSB = Reg(UInt(1.W))
-  when(io.ctrl.shiftAmountEnable) { shiftAmountMSB := negativeB }
+  when(io.ctrl.shiftAmountEnable) {
+    shiftAmountMSB := negativeB
+    shiftAmount := shiftAmountSerial ## shiftAmount(4,1)
+  }
   shift.io.shamt_msb := shiftAmountMSB
   shift.io.signbit := io.ctrl.shiftSigned & io.data.rs1
   shift.io.right := io.ctrl.shiftRight
@@ -104,7 +101,7 @@ class Alu extends Module {
   io.shiftDone := shift.io.done
   val resultShift = shift.io.q
 
-  // equaity
+  // equality
   val equal = io.data.rs1 === operandB
   val equalBuf = Reg(UInt(1.W))
   val resultEqual = equal & equalBuf
@@ -129,24 +126,6 @@ class Alu extends Module {
     (io.ctrl.rdSelect.asUInt()(1) & resultShift)         |
     (io.ctrl.rdSelect.asUInt()(2) & resultLtBuf & plus1) |
     (io.ctrl.rdSelect.asUInt()(3) & resultBool)
-}
-
-
-
-class ShiftRegister[D <: UInt](init: D) extends Module {
-  val io = IO(new Bundle {
-    val en = Input(Bool())
-    val d = Input(UInt(1.W))
-    val q = Output(UInt(1.W))
-    val par = Output(chiselTypeOf(init))
-  })
-
-  val data = RegInit(init)
-  io.q := data.tail(1)
-  io.par := data.head(init.getWidth - 1)
-  when(io.en) {
-    data := Cat(io.d, data.head(init.getWidth - 1))
-  }
 }
 
 class SerialShift extends Module {
