@@ -22,7 +22,14 @@ class AluSpec extends FlatSpec with ChiselScalatestTester  {
     io.count.enabled.poke(true.B)
     io.ctrl.opBIsRS2.poke(true.B)
     conf(io.ctrl)
-    (0 until 32).foreach { ii =>
+    // bit0
+    io.data.rs1.poke((rs1 & 1).U)
+    io.data.rs2.poke((rs2 & 1).U)
+    io.data.rd.expect((rd & 1).U)
+    clock.step()
+    io.count.count0.poke(false.B)
+    // bit1...bit31
+    (1 until 32).foreach { ii =>
       io.data.rs1.poke(((rs1 >> ii) & 1).U) // TODO: would like to be able to do UInt bit extract
       io.data.rs2.poke(((rs2 >> ii) & 1).U)
       io.data.rd.expect(((rd >> ii) & 1).U)
