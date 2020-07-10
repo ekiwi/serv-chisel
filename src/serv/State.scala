@@ -14,10 +14,13 @@ class State(withCsr: Boolean = true) extends Module {
   val io = IO(new StateIO)
 
   val init = Reg(Bool())
+  io.init := init
 
   // count logic
   val countDone = Reg(Bool())
+  io.count.done := countDone
   val countEnabled = Reg(Bool())
+  io.count.enable := countEnabled
   when(io.rf.ready) { countEnabled := true.B }
   when(countDone) { countEnabled := false.B }
 
@@ -26,6 +29,7 @@ class State(withCsr: Boolean = true) extends Module {
   count := count + countR(3)
   when(countEnabled) { countR := countR(2,0) ## countR(3) }
 
+  // Need a strobe for the first cycle in the IDLE state after INIT
   val stageTwoRequest = RegNext(countDone && init)
 
   // update PC in RUN or TRAP states
@@ -74,7 +78,33 @@ class State(withCsr: Boolean = true) extends Module {
   when(countDone) { controlJump := init &&  io.decode.takeBranch }
   io.control.jump := controlJump
 
+  val pendingIrq = Reg(Bool())
+  io.csr.pendingIrq := pendingIrq
 
+  // init update logic
+  when(io.rf.ready && !stageTwoPending) {
+    init := twoStageOp && !pendingIrq
+  }
+  when(countDone) { init := false.B }
+
+  if(withCsr) {
+    val irqSync = Reg(Bool())
+    val misalignedTrapSync = Reg(Bool())
+    io.control.trap := io.decode.eOp | pendingIrq | misalignedTrapSync
+    io.csr.trapTaken := io.ibus.ack && io.control.trap
+
+    when(io.ibus.ack) { irqSync := false.B }
+    when(io.csr.newIrq) { irqSync := true.B }
+
+    when(io.ibus.ack) { pendingIrq := irqSync }
+
+    when(stageTwoRequest) { misalignedTrapSync := trapPending }
+    when(io.ibus.ack) { misalignedTrapSync := false.B }
+  } else {
+    io.control.trap := DontCare
+    io.csr.trapTaken := DontCare
+    pendingIrq := false.B
+  }
 }
 
 
