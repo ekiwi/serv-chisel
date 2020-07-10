@@ -26,8 +26,11 @@ class State(withCsr: Boolean = true) extends Module {
 
   val count = RegInit(0.U(3.W))
   val countR = RegInit(1.U(4.W))
+  // count: 0 -> 1 -> ... -> 7 -> 0 -> ... (@ FREQ / 4)
   count := count + countR(3)
+  // countR: 1 -> 2 -> 4 -> 8 -> 1 ... (@ FREQ)
   when(countEnabled) { countR := countR(2,0) ## countR(3) }
+  countDone := (count === 7.U) && countR(2)
 
   // Need a strobe for the first cycle in the IDLE state after INIT
   val stageTwoRequest = RegNext(countDone && init)
