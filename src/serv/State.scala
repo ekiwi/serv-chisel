@@ -14,13 +14,13 @@ class State(withCsr: Boolean = true) extends Module {
   val io = IO(new StateIO)
 
   val init = Reg(Bool())
-  io.init := init
+  io.count.init := init
 
   // count logic
   val countDone = Reg(Bool())
   io.count.done := countDone
   val countEnabled = Reg(Bool())
-  io.count.enable := countEnabled
+  io.count.enabled := countEnabled
   when(io.rf.ready) { countEnabled := true.B }
   when(countDone) { countEnabled := false.B }
 
@@ -112,13 +112,12 @@ class State(withCsr: Boolean = true) extends Module {
 
 
 class StateIO extends Bundle {
-  val init = Output(Bool())
   val csr = new StateToCsrIO
   val dbus = new StateToDataBusIO
   val ibus = new StateToInstructionBusIO
   val rf = new StateToRegisterFileIO
   val decode = Flipped(new DecodeToStateIO)
-  val count = new StateCountIO
+  val count = new CountIO
   val bufreg = new StateToBufRegIO
   val control = new StateToControlIO
   val alu = new StateToAluIO
@@ -146,8 +145,9 @@ class StateToRegisterFileIO extends Bundle {
   val ready = Input(Bool())
   val writeEnable = Output(Bool()) // rf_rd_en
 }
-class StateCountIO extends Bundle {
-  val enable = Output(Bool())
+class CountIO extends Bundle {
+  val enabled = Output(Bool())
+  val init = Output(Bool())
   val count0 = Output(Bool())
   val count0To3 = Output(Bool())
   val count12To31 = Output(Bool())

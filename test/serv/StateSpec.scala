@@ -22,14 +22,14 @@ class StateSpec extends FlatSpec with ChiselScalatestTester  {
       // all starts with a 1 clk cycle pulse from the register file
       dut.io.rf.ready.poke(true.B)
       // all the outputs should be zero at this point
-      dut.io.count.enable.expect(false.B)
+      dut.io.count.enabled.expect(false.B)
       dut.io.count.done.expect(false.B)
 
       dut.clock.step()
       dut.io.rf.ready.poke(false.B)
 
       (0 until 32).foreach { ii =>
-        dut.io.count.enable.expect(true.B)
+        dut.io.count.enabled.expect(true.B)
         dut.io.count.count0.expect(if(ii == 0) { true.B } else { false.B })
         dut.io.count.count1.expect(if(ii == 1) { true.B } else { false.B })
         dut.io.count.count2.expect(if(ii == 2) { true.B } else { false.B })

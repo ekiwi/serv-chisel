@@ -46,16 +46,6 @@ class AluDataIO extends Bundle {
   val rd = Output(UInt(1.W))
 }
 
-/* global counter */
-class CountIO extends Bundle {
-  val init = Input(Bool())
-  val value = Input(UInt(5.W))
-  val enabled = Input(Bool())
-  val count0 = Input(Bool())
-  val done = Input(Bool())
-
-}
-
 class AluIO extends Bundle {
   val ctrl = new AluControlIO()
   val data = new AluDataIO()

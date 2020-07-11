@@ -19,6 +19,13 @@ class DecodeToStateIO extends Bundle {
   val rdOp = Output(Bool())
 }
 
+class DecodeToControlIO extends Bundle {
+  val jalOrJalr = Output(Bool())
+  val uType = Output(Bool())
+  val pcRel = Output(Bool())
+  val mRet = Output(Bool())
+}
+
 class Decode {
 
 }
