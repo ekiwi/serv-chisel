@@ -27,15 +27,8 @@ object Result extends ChiselEnum {
 /* Connects ALU to Decoder */
 class AluControlIO extends Bundle {
   val opBIsRS2 = Input(Bool()) // instead of immediate
-  val doSubtract = Input(Bool())
-  val boolOp = Input(BooleanOperation())
-  val cmpEqual = Input(Bool())
-  val cmpUnsigned = Input(Bool())
   val cmpResult = Output(UInt(1.W))
   val shiftAmountEnable = Input(Bool())
-  val shiftSigned = Input(Bool())
-  val shiftRight = Input(Bool())
-  val rdSelect = Input(Result())
 }
 
 class AluDataIO extends Bundle {
@@ -48,6 +41,7 @@ class AluDataIO extends Bundle {
 
 class AluIO extends Bundle {
   val ctrl = new AluControlIO()
+  val decode = Flipped(new DecodeToAluIO)
   val data = new AluDataIO()
   val count = new CountIO()
   val shiftDone = Output(Bool())
@@ -67,14 +61,14 @@ class Alu extends Module {
 
 
   // adder
-  val addB = Mux(io.ctrl.doSubtract, negativeB, operandB)
+  val addB = Mux(io.decode.doSubtract, negativeB, operandB)
   val addCarry = Reg(UInt(1.W))
   val addCarryNextAndResult = io.data.rs1 +& addB + addCarry
   addCarry := io.count.enabled & addCarryNextAndResult(1)
   val resultAdd = addCarryNextAndResult(0)
 
   // shifter
-  val shiftAmountSerial = Mux(io.ctrl.shiftRight, operandB, negativeB)
+  val shiftAmountSerial = Mux(io.decode.shiftRight, operandB, negativeB)
   val shiftAmount = Reg(UInt(5.W))
   val shift = Module(new SerialShift)
   shift.io.load := io.count.init
@@ -85,8 +79,8 @@ class Alu extends Module {
     shiftAmount := shiftAmountSerial ## shiftAmount(4,1)
   }
   shift.io.shamt_msb := shiftAmountMSB
-  shift.io.signbit := io.ctrl.shiftSigned & io.data.rs1
-  shift.io.right := io.ctrl.shiftRight
+  shift.io.signbit := io.decode.shiftSigned & io.data.rs1
+  shift.io.right := io.decode.shiftRight
   shift.io.d := io.data.buffer
   io.shiftDone := shift.io.done
   val resultShift = shift.io.q
@@ -99,23 +93,23 @@ class Alu extends Module {
 
   // less then
   val ltBuf = Reg(UInt(1.W))
-  val ltSign = io.count.done & !io.ctrl.cmpUnsigned
+  val ltSign = io.count.done & !io.decode.cmpUnsigned
   val resultLt = Mux(equal, ltBuf, operandB ^ ltSign)
   val resultLtBuf = Reg(UInt(1.W))
   when(io.count.enabled) { resultLtBuf := resultLt}
 
-  io.ctrl.cmpResult := Mux(io.ctrl.cmpEqual, resultEqual, resultLt)
+  io.ctrl.cmpResult := Mux(io.decode.cmpEqual, resultEqual, resultLt)
 
   // boolean operations
   val BoolLookupTable = "h8e96".U
-  val resultBool = BoolLookupTable(io.ctrl.boolOp.asUInt() ## io.data.rs1 ## operandB)
+  val resultBool = BoolLookupTable(io.decode.boolOp.asUInt() ## io.data.rs1 ## operandB)
 
   // results
   io.data.rd :=
-    (io.ctrl.rdSelect.asUInt()(0) & resultAdd)           |
-    (io.ctrl.rdSelect.asUInt()(1) & resultShift)         |
-    (io.ctrl.rdSelect.asUInt()(2) & resultLtBuf & plus1) |
-    (io.ctrl.rdSelect.asUInt()(3) & resultBool)
+    (io.decode.rdSelect.asUInt()(0) & resultAdd)           |
+    (io.decode.rdSelect.asUInt()(1) & resultShift)         |
+    (io.decode.rdSelect.asUInt()(2) & resultLtBuf & plus1) |
+    (io.decode.rdSelect.asUInt()(3) & resultBool)
 }
 
 class SerialShift extends Module {
