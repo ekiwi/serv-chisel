@@ -117,7 +117,7 @@ class StateIO extends Bundle {
   val ibus = new StateToInstructionBusIO
   val rf = new StateToRegisterFileIO
   val decode = Flipped(new DecodeToStateIO)
-  val count = new CountIO
+  val count = Flipped(new CountIO)
   val bufreg = new StateToBufRegIO
   val control = new StateToControlIO
   val alu = new StateToAluIO
@@ -146,16 +146,16 @@ class StateToRegisterFileIO extends Bundle {
   val writeEnable = Output(Bool()) // rf_rd_en
 }
 class CountIO extends Bundle {
-  val enabled = Output(Bool())
-  val init = Output(Bool())
-  val count0 = Output(Bool())
-  val count0To3 = Output(Bool())
-  val count12To31 = Output(Bool())
-  val count1 = Output(Bool())
-  val count2 = Output(Bool())
-  val count3 = Output(Bool())
-  val count7 = Output(Bool())
-  val done = Output(Bool())
+  val enabled = Input(Bool())
+  val init = Input(Bool())
+  val count0 = Input(Bool())
+  val count0To3 = Input(Bool())
+  val count12To31 = Input(Bool())
+  val count1 = Input(Bool())
+  val count2 = Input(Bool())
+  val count3 = Input(Bool())
+  val count7 = Input(Bool())
+  val done = Input(Bool())
 }
 
 class StateToBufRegIO extends Bundle {

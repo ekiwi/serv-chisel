@@ -62,7 +62,7 @@ class Control(resetPc: Int = 0, withCsr: Boolean = true) extends Module{
 
 class ControlIO extends Bundle {
   val state = Flipped(new StateToControlIO)
-  val count = Flipped(new CountIO)
+  val count = new CountIO
   val decode = Flipped(new DecodeToControlIO)
   val ibus = new ControlToInstructionBus
   val data = new ControlDataIO
