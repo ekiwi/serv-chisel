@@ -93,7 +93,33 @@ class Decode extends Module {
   // Write to RD
   // True for OP-IMM, AUIPC, OP, LUI, SYSTEM, JALR, JAL, LOAD
   // False for STORE, BRANCH, MISC-MEM
+  io.state.rdOp := (opcode(2) ||
+                    (!opcode(2) && opcode(4) && opcode(0)) ||
+                    (!opcode(2) && !opcode(3) && !opcode(0))) && io.rf.rdAddress.orR()
+  io.alu.doSubtract := opcode(3) && imm30
 
+  /*
+    300 0_000 mstatus RWSC
+    304 0_100 mie SCWi
+    305 0_101 mtvec RW
+    340 1_000 mscratch
+    341 1_001 mepc  RW
+    342 1_010 mcause R
+    343 1_011 mtval
+    344 1_100 mip CWi
+    */
+
+  //true  for mtvec,mscratch,mepc and mtval
+  //false for mstatus, mie, mcause, mip
+  val csrValid = op20 || (op26 && !op22 && !op21)
+
+  //Matches system ops except eceall/ebreak
+  val csrOp = opcode(4) && opcode(2) && funct3.orR()
+  io.top.rdCsrEn := csrOp
+
+  io.csr.enable := csrOp && csrValid
+  io.csr.mStatusEn := csrOp && !op26 && !op22
+  
 }
 
 class DecodeIO extends Bundle {
