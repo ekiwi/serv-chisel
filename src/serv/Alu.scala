@@ -18,6 +18,7 @@ object BooleanOperation extends ChiselEnum {
 }
 
 object Result extends ChiselEnum {
+  val None  = Value("b0000".U)
   val Add   = Value("b0001".U)
   val Shift = Value("b0010".U)
   val Lt    = Value("b0100".U)

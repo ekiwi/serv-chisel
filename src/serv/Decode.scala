@@ -114,12 +114,47 @@ class Decode extends Module {
   val csrValid = op20 || (op26 && !op22 && !op21)
 
   //Matches system ops except eceall/ebreak
-  val csrOp = opcode(4) && opcode(2) && funct3.orR()
   io.top.rdCsrEn := csrOp
 
   io.csr.enable := csrOp && csrValid
   io.csr.mStatusEn := csrOp && !op26 && !op22
-  
+  io.csr.mieEn     := csrOp && !op26 &&  op22 && !op20
+  io.csr.mcauseEn  := csrOp          &&  op21 && !op20
+  io.csr.source := funct3(1,0)
+  io.csr.dSel := funct3(2)
+  io.csr.imm := rs1Address(0)
+  io.csr.address := MuxCase[UInt](Csr.Mtvec, Seq(
+    (op26 && !op20) -> Csr.Mscratch,
+    (op26 && !op21) -> Csr.Mepc,
+    ((op26        ) -> Csr.Mtval)))
+
+  io.alu.cmpEqual := funct3(2,1) === 0.U
+  io.alu.cmpUnsigned := (funct3(0) && funct3(1)) || (funct3(1) && funct3(2))
+  io.alu.shiftSigned := imm30
+  io.alu.shiftRight := funct3(2)
+  io.alu.boolOp := BooleanOperation(funct3(1,0))
+  // one hot encoded
+  val aluBool = funct3(2) && !(funct3(1,0) === 1.U)
+  val aluSlt = funct3(2,1) === 1.U
+  val aluShift = funct3(1,0) === 1.U
+  val aluAddSub = funct3 === 0.U
+  io.alu.rdSelect := Result(aluBool ## aluSlt ## aluShift ## aluAddSub)
+
+  io.mem.cmd := opcode(3)
+  io.mem.signed := !funct3(2)
+  io.mem.word := funct3(1)
+  io.mem.half := funct3(0)
+
+  // True for S (STORE) or B (BRANCH) type instructions
+  // False for J type instructions
+  val m1 = opcode(3,0) === "b1000".U
+  io.top.imm := Mux(io.count.done, signbit, Mux(m1, imm11_7(0), imm24_20(0)))
+
+  //0 (OP_B_SOURCE_IMM) when OPIMM
+  //1 (OP_B_SOURCE_RS2) when BRANCH or OP
+  io.top.opBSource := opcode(3)
+
+  io.top.rdAluEn := !opcode(0) && opcode(2) && !opcode(4)
 }
 
 class DecodeIO extends Bundle {
