@@ -55,8 +55,10 @@ class Decode extends Module {
   // Matches system opcodes except CSR accesses (funct3 == 0).
   // No idea anymore why the !op21 condition is needed here.
   io.state.eOp := opcode(4) & opcode(2) & !op21 & !(funct3.orR())
+  io.csr.eOp := io.state.eOp
 
   io.state.eBreak := op20
+  io.csr.eBreak := io.state.eBreak
 
   // jal,branch =     imm
   // jalr       = rs1+imm
@@ -226,6 +228,8 @@ class DecodeToCsrIO extends Bundle {
   val source = Output(UInt(2.W))
   val dSel = Output(Bool())
   val imm = Output(UInt(1.W))
+  val eOp = Output(Bool())
+  val eBreak = Output(Bool())
 }
 
 class DecodeToTopIO extends Bundle {
