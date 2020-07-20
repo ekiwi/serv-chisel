@@ -48,6 +48,7 @@ class Decode extends Module {
 
   val opOrOpimm   = !opcode(4) &&  opcode(2) && !opcode(0)
   io.state.memOp := !opcode(4) && !opcode(2) && !opcode(0)
+  io.mem.memOp   := io.state.memOp
   io.state.shiftOp  := opOrOpimm && (funct3(1,0) === 1.U)
   io.state.sltOp    := opOrOpimm && (funct3(2,1) === 1.U)
   io.state.branchOp := opcode(4) & !opcode(2)
@@ -214,6 +215,7 @@ class DecodeToRegisterFileIO extends Bundle {
 }
 
 class DecodeToMemoryIO extends Bundle {
+  val memOp = Output(Bool())
   val signed = Output(Bool())
   val word = Output(Bool())
   val half = Output(Bool())

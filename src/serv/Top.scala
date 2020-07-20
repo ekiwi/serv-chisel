@@ -18,7 +18,7 @@ class Top(withCsr: Boolean) extends Module {
   val control = new Control
   val alu = new Alu
   val rfInterface = ???
-  val mem = ???
+  val mem = new MemoryInterface(withCsr)
 
   if(withCsr) {
     val csr = new Csr

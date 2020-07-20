@@ -121,7 +121,7 @@ class StateIO extends Bundle {
   val bufreg = new StateToBufRegIO
   val control = new StateToControlIO
   val alu = new StateToAluIO
-  val mem = new StateToMemIO
+  val mem = new StateToMemoryIO
   val lsb1 = Input(UInt(1.W)) // lsb[1] aka i_ctrl_misalign
 }
 
@@ -174,7 +174,7 @@ class StateToAluIO extends Bundle {
   val shiftDone = Input(Bool())
 }
 
-class StateToMemIO extends Bundle {
+class StateToMemoryIO extends Bundle {
   val byteCount = Output(UInt(2.W))
   val misaligned = Input(Bool())
 }
