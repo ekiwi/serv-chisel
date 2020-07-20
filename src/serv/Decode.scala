@@ -91,6 +91,7 @@ class Decode extends Module {
   io.control.pcRel := (opcode(2,0) === 0.U) || (opcode(1,0) === 3.U) || (opcode(4,3) === 0.U)
 
   io.control.mRet := opcode(4) && opcode(2) && op21 && !funct3.orR()
+  io.csr.mRet := io.control.mRet
 
   // Write to RD
   // True for OP-IMM, AUIPC, OP, LUI, SYSTEM, JALR, JAL, LOAD
@@ -230,6 +231,7 @@ class DecodeToCsrIO extends Bundle {
   val imm = Output(UInt(1.W))
   val eOp = Output(Bool())
   val eBreak = Output(Bool())
+  val mRet = Output(Bool())
 }
 
 class DecodeToTopIO extends Bundle {

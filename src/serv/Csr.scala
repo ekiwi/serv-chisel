@@ -7,6 +7,7 @@
 package serv
 
 import chisel3._
+import chisel3.util._
 
 class Csr extends Module {
   val io = new CsrIO
@@ -16,8 +17,62 @@ class Csr extends Module {
   val mieMtie = Reg(Bool())
   val mStatus = RegNext(io.count.count2 && mStatusMie)
   val mCause3_0 = Reg(UInt(4.W))
+  val mCause31 = Reg(Bool())
 
-  when(io.decode)
+  val mCause = Mux(io.count.count0To3, mCause3_0(0), Mux(io.count.done, mCause31, 0.U))
+
+  val csrOut = ((io.decode.mStatusEn && io.count.enabled && mStatus) ||
+    io.rf.readData.asBool() ||
+    (io.decode.mcauseEn && io.count.enabled && mCause.asBool()))
+
+  io.dataOut := csrOut
+
+  val csrIn = MuxLookup(io.decode.source, 0.U, Seq(
+    Csr.SourceExt -> io.dataIn,
+    Csr.SourceSet -> (csrOut | io.dataIn),
+    Csr.SourceClr -> (csrOut & !io.dataIn),
+    Csr.SourceCsr -> csrOut
+  ))
+
+  val timerIrq = io.timerInterrupt && mStatusMie && mieMtie
+
+  io.state.newIrq := !RegNext(timerIrq) && timerIrq
+
+  when(io.decode.mStatusEn && io.count.count3) {
+    mStatusMie := io.dataIn
+  }
+
+  when(io.decode.mieEn && io.count.count7) {
+    mieMtie := io.dataIn
+  }
+
+  when(io.decode.mRet) {
+    mStatusMie := mStatusMpie
+  }
+
+  when(io.state.trapTaken) {
+    mStatusMpie := mStatusMie
+    mStatusMie := false.B
+    mCause31 := io.state.pendingIrq
+    when(io.state.pendingIrq) {
+      mCause3_0 := 7.U
+    } .elsewhen(io.decode.eOp) {
+      mCause3_0 := (!io.decode.eBreak) ## "b011".U
+    } .elsewhen(io.memMisaligned) {
+      mCause3_0 := "b01".U ## io.memCmd ## "b0".U
+    } .otherwise {
+      mCause3_0 := 0.U
+    }
+  }
+
+  when(io.decode.mcauseEn && io.count.enabled) {
+    when(io.count.count0To3) {
+      mCause3_0 := csrIn ## mCause3_0(3,1)
+    }
+    when(io.count.done) {
+      mCause3_0 := csrIn
+    }
+  }
 
 
 }
@@ -27,8 +82,15 @@ class CsrIO extends Bundle {
   val decode = Flipped(new DecodeToCsrIO)
   val memCmd = Input(Bool())
   val memMisaligned = Input(Bool())
+  val state = Flipped(new StateToCsrIO)
+  val rf = Flipped(new RegisterFileToCsrIO)
   val dataIn = Input(UInt(1.W))   // i_d
   val dataOut = Output(UInt(1.W)) // o_q
+  val timerInterrupt = Input(Bool())
+}
+
+class RegisterFileToCsrIO extends Bundle {
+  val readData = Output(UInt(1.W)) // rf_csr_out
 }
 
 object Csr {
