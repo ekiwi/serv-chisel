@@ -59,7 +59,7 @@ class State(withCsr: Boolean = true) extends Module {
 
   io.dbus.cyc := !countEnabled && stageTwoPending && io.decode.memOp && !io.mem.misaligned
 
-  val trapPending = withCsr.B && ((io.control.jump && io.bufreg.lsb1.asBool()) || io.mem.misaligned)
+  val trapPending = withCsr.B && ((io.control.jump && io.lsb1.asBool()) || io.mem.misaligned)
 
   // Prepare RF for reads when a new instruction is fetched
   // or when stage one caused an exception (rreq implies a write request too)
@@ -122,6 +122,7 @@ class StateIO extends Bundle {
   val control = new StateToControlIO
   val alu = new StateToAluIO
   val mem = new StateToMemIO
+  val lsb1 = Input(UInt(1.W)) // lsb[1] aka i_ctrl_misalign
 }
 
 class StateToCsrIO extends Bundle {
@@ -160,7 +161,6 @@ class CountIO extends Bundle {
 
 class StateToBufRegIO extends Bundle {
   val hold = Output(Bool())
-  val lsb1 = Input(UInt(1.W)) // lsb[1] aka i_ctrl_misalign
 }
 
 class StateToControlIO extends Bundle {

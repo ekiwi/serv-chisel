@@ -73,7 +73,7 @@ class Decode extends Module {
   // Clear LSB of immediate for BRANCH and JAL ops
   // True for BRANCH and JAL
   // False for JALR/LOAD/STORE/OP/OPIMM?
-  io.bufreg.clrLsb := opcode(4) && ((opcode(1,0) === 0.U) || (opcode(1,0) === 3.U))
+  io.bufreg.clearLsb := opcode(4) && ((opcode(1,0) === 0.U) || (opcode(1,0) === 3.U))
 
   // Take branch for jump or branch instructions (opcode == 1x0xx) if
   // a) It's an unconditional branch (opcode[0] == 1)
@@ -163,7 +163,7 @@ class Decode extends Module {
 class DecodeIO extends Bundle {
   val count = new CountIO
   val state = new DecodeToStateIO
-  val bufreg = new DecodeToBufregIO
+  val bufreg = new DecodeToBufRegIO
   val control = new DecodeToControlIO
   val alu = new DecodeToAluIO
   val rf = new DecodeToRegisterFileIO
@@ -183,11 +183,11 @@ class DecodeToStateIO extends Bundle {
   val rdOp = Output(Bool())
 }
 
-class DecodeToBufregIO extends Bundle {
+class DecodeToBufRegIO extends Bundle {
   val loop = Output(Bool())
   val rs1En = Output(Bool())
   val immEn = Output(Bool())
-  val clrLsb = Output(Bool())
+  val clearLsb = Output(Bool())
 }
 
 class DecodeToControlIO extends Bundle {

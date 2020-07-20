@@ -14,7 +14,7 @@ class Top(withCsr: Boolean) extends Module {
 
   val state = new State
   val decode = new Decode
-  val bufreg = ???
+  val bufreg = new BufReg
   val control = new Control
   val alu = new Alu
   val rfInterface = ???
