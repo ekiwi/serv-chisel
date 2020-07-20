@@ -10,7 +10,7 @@ import chisel3._
 import chisel3.util._
 
 class Csr extends Module {
-  val io = new CsrIO
+  val io = IO(new CsrIO)
 
   val mStatusMie = Reg(Bool())
   val mStatusMpie = Reg(Bool())
