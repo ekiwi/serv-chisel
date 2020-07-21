@@ -31,7 +31,8 @@ class RegisterFileIO extends Bundle {
   val read1 = new ReadPortIO()
 }
 
-class RegisterFileRamInterface(width: Int, csrRegs: Int = 4) extends MultiIOModule {
+// serv_rf_ram_if
+class RamInterface(width: Int, csrRegs: Int = 4) extends MultiIOModule {
   val depth = 32 * (32 + csrRegs) / width
 
   val ram = IO(Flipped(new RamIO(width, depth)))

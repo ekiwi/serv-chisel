@@ -10,7 +10,7 @@ import chisel3._
 import chisel3.tester.experimental.TestOptionBuilder._
 import chiseltest.internal.WriteVcdAnnotation
 
-class RegisterFileSpec extends FlatSpec with ChiselScalatestTester  {
+class RamInterfaceSpec extends FlatSpec with ChiselScalatestTester  {
   val WithVcd = Seq(WriteVcdAnnotation)
   val NoVcd = Seq()
 
@@ -69,7 +69,7 @@ class RegisterFileSpec extends FlatSpec with ChiselScalatestTester  {
 
 class RegisterFileWrapper(width: Int, csrRegs: Int = 4) extends Module {
   val io = IO(new RegisterFileIO())
-  val interface = Module(new RegisterFileRamInterface(width, csrRegs))
+  val interface = Module(new RamInterface(width, csrRegs))
   val ram = Module(new Ram(width, interface.depth))
   io <> interface.rf
   ram.io <> interface.ram
