@@ -115,7 +115,7 @@ class StateIO extends Bundle {
   val csr = new StateToCsrIO
   val dbus = new StateToDataBusIO
   val ibus = new StateToInstructionBusIO
-  val rf = new StateToRegisterFileIO
+  val rf = new StateToRamInterfaceIO
   val decode = Flipped(new DecodeToStateIO)
   val count = Flipped(new CountIO)
   val bufreg = new StateToBufRegIO
@@ -140,11 +140,11 @@ class StateToInstructionBusIO extends Bundle {
   val ack = Input(Bool())
 }
 
-class StateToRegisterFileIO extends Bundle {
-  val writeRequest = Output(Bool())
-  val readRequest = Output(Bool())
-  val ready = Input(Bool())
-  val writeEnable = Output(Bool()) // rf_rd_en
+class StateToRamInterfaceIO extends Bundle {
+  val writeRequest = Output(Bool()) // o_rf_wref
+  val readRequest = Output(Bool())  // o_rf_rreq
+  val ready = Input(Bool())         // i_rf_ready <->
+  val writeEnable = Output(Bool())  // rf_rd_en   <->
 }
 class CountIO extends Bundle {
   val enabled = Input(Bool())
