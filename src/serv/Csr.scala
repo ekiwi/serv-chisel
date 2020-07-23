@@ -34,6 +34,8 @@ class Csr extends Module {
     Csr.SourceCsr -> csrOut
   ))
 
+  io.rf.writeData := csrIn
+
   val timerIrq = io.timerInterrupt && mStatusMie && mieMtie
 
   io.state.newIrq := !RegNext(timerIrq) && timerIrq
@@ -90,10 +92,8 @@ class CsrIO extends Bundle {
 }
 
 class RegisterFileToCsrIO extends Bundle {
-  val readData = Output(UInt(1.W)) // rf_csr_out
-  val writeData = Input(UInt(1.W)) // i_csr
-  val address = Input(UInt(2.W))
-  val enable = Input(Bool())
+  val readData = Output(UInt(1.W)) // rf_csr_out, o_csr
+  val writeData = Input(UInt(1.W)) // i_csr, csr_in, o_csr_in
 }
 
 object Csr {

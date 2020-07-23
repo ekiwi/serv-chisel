@@ -120,14 +120,14 @@ class Decode extends Module {
   //Matches system ops except eceall/ebreak
   io.top.rdCsrEn := csrOp
 
-  io.csr.enable := csrOp && csrValid
+  io.rf.csrEnable := csrOp && csrValid
   io.csr.mStatusEn := csrOp && !op26 && !op22
   io.csr.mieEn     := csrOp && !op26 &&  op22 && !op20
   io.csr.mcauseEn  := csrOp          &&  op21 && !op20
   io.csr.source := funct3(1,0)
   io.csr.dSel := funct3(2)
   io.csr.imm := rs1Address(0)
-  io.csr.address := MuxCase[UInt](Csr.Mtvec, Seq(
+  io.rf.csrAddress := MuxCase[UInt](Csr.Mtvec, Seq(
     (op26 && !op20) -> Csr.Mscratch,
     (op26 && !op21) -> Csr.Mepc,
     ((op26        ) -> Csr.Mtval)))
@@ -209,9 +209,11 @@ class DecodeToAluIO extends Bundle {
 }
 
 class DecodeToRegisterFileIO extends Bundle {
-  val rdAddress = Output(UInt(5.W))
+  val rdAddress = Output(UInt(5.W)) // i_rd_waddr
   val rs1Address = Output(UInt(5.W))
   val rs2Address = Output(UInt(5.W))
+  val csrAddress = Output(UInt(2.W)) // i_csr_addr, csr_addr
+  val csrEnable = Output(Bool()) // i_csr_en, csr_en,
 }
 
 class DecodeToMemoryIO extends Bundle {
@@ -223,8 +225,6 @@ class DecodeToMemoryIO extends Bundle {
 }
 
 class DecodeToCsrIO extends Bundle {
-  val enable = Output(Bool())
-  val address = Output(UInt(2.W))
   val mStatusEn = Output(Bool())
   val mieEn = Output(Bool())
   val mcauseEn = Output(Bool())
