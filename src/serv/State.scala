@@ -7,6 +7,7 @@
 package serv
 
 import chisel3._
+import chisel3.internal.BundleLitBinding
 
 
 
@@ -21,7 +22,7 @@ class State(withCsr: Boolean = true) extends Module {
   io.count.done := countDone
   val countEnabled = Reg(Bool())
   io.count.enabled := countEnabled
-  when(io.rf.ready) { countEnabled := true.B }
+  when(io.ram.ready) { countEnabled := true.B }
   when(countDone) { countEnabled := false.B }
 
   val count = RegInit(0.U(3.W))
@@ -63,10 +64,10 @@ class State(withCsr: Boolean = true) extends Module {
 
   // Prepare RF for reads when a new instruction is fetched
   // or when stage one caused an exception (rreq implies a write request too)
-  io.rf.readRequest := io.ibus.ack || (stageTwoRequest & trapPending)
+  io.ram.readRequest := io.ibus.ack || (stageTwoRequest & trapPending)
 
   // Prepare RF for writes when everything is ready to enter stage two
-  io.rf.writeRequest := (
+  io.ram.writeRequest := (
     (io.decode.shiftOp && io.alu.shiftDone && stageTwoPending) ||
     (io.decode.memOp && io.dbus.ack) ||
     (stageTwoRequest && (io.decode.sltOp | io.decode.branchOp) && !trapPending))
@@ -85,7 +86,7 @@ class State(withCsr: Boolean = true) extends Module {
   io.csr.pendingIrq := pendingIrq
 
   // init update logic
-  when(io.rf.ready && !stageTwoPending) {
+  when(io.ram.ready && !stageTwoPending) {
     init := twoStageOp && !pendingIrq
   }
   when(countDone) { init := false.B }
@@ -115,7 +116,8 @@ class StateIO extends Bundle {
   val csr = new StateToCsrIO
   val dbus = new StateToDataBusIO
   val ibus = new StateToInstructionBusIO
-  val rf = new StateToRamInterfaceIO
+  val ram = new StateToRamInterfaceIO
+  val rf = new StateToRegisterFileInterfaceIO
   val decode = Flipped(new DecodeToStateIO)
   val count = Flipped(new CountIO)
   val bufreg = new StateToBufRegIO
@@ -144,8 +146,12 @@ class StateToRamInterfaceIO extends Bundle {
   val writeRequest = Output(Bool()) // o_rf_wref
   val readRequest = Output(Bool())  // o_rf_rreq
   val ready = Input(Bool())         // i_rf_ready <->
+}
+
+class StateToRegisterFileInterfaceIO extends Bundle {
   val writeEnable = Output(Bool())  // rf_rd_en   <->
 }
+
 class CountIO extends Bundle {
   val enabled = Input(Bool())
   val init = Input(Bool())

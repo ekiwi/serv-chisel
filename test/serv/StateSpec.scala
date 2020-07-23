@@ -20,13 +20,13 @@ class StateSpec extends FlatSpec with ChiselScalatestTester  {
   it should "count correctly" in {
     test(new State) { dut =>
       // all starts with a 1 clk cycle pulse from the register file
-      dut.io.rf.ready.poke(true.B)
+      dut.io.ram.ready.poke(true.B)
       // all the outputs should be zero at this point
       dut.io.count.enabled.expect(false.B)
       dut.io.count.done.expect(false.B)
 
       dut.clock.step()
-      dut.io.rf.ready.poke(false.B)
+      dut.io.ram.ready.poke(false.B)
 
       (0 until 32).foreach { ii =>
         dut.io.count.enabled.expect(true.B)

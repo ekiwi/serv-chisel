@@ -29,7 +29,6 @@ object Result extends ChiselEnum {
 class AluControlIO extends Bundle {
   val opBIsRS2 = Input(Bool()) // instead of immediate
   val cmpResult = Output(UInt(1.W))
-  val shiftAmountEnable = Input(Bool())
 }
 
 class AluDataIO extends Bundle {
@@ -45,7 +44,7 @@ class AluIO extends Bundle {
   val decode = Flipped(new DecodeToAluIO)
   val data = new AluDataIO()
   val count = new CountIO()
-  val shiftDone = Output(Bool())
+  val state = Flipped(new StateToAluIO)
 }
 
 class Alu extends Module {
@@ -75,7 +74,7 @@ class Alu extends Module {
   shift.io.load := io.count.init
   shift.io.shiftAmount := shiftAmount
   val shiftAmountMSB = Reg(UInt(1.W))
-  when(io.ctrl.shiftAmountEnable) {
+  when(io.state.shiftAmountEnable) {
     shiftAmountMSB := negativeB
     shiftAmount := shiftAmountSerial ## shiftAmount(4,1)
   }
@@ -83,7 +82,7 @@ class Alu extends Module {
   shift.io.signbit := io.decode.shiftSigned & io.data.rs1
   shift.io.right := io.decode.shiftRight
   shift.io.d := io.data.buffer
-  io.shiftDone := shift.io.done
+  io.state.shiftDone := shift.io.done
   val resultShift = shift.io.q
 
   // equality
