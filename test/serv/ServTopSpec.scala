@@ -13,11 +13,11 @@ class ServTopSpec extends FlatSpec with ChiselScalatestTester  {
   val WithVcd = Seq(WriteVcdAnnotation)
   val NoVcd = Seq()
 
-  it should "elaborate w/ csr" ignore {
+  it should "elaborate w/ csr" in {
     test(new ServTop(true)) { dut => }
   }
 
-  it should "elaborate w/o csr" ignore {
+  it should "elaborate w/o csr" in {
     test(new ServTop(false)) { dut => }
   }
 }

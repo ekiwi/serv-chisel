@@ -25,12 +25,6 @@ object Result extends ChiselEnum {
   val Bool  = Value("b1000".U)
 }
 
-/* Connects ALU to Decoder */
-class AluControlIO extends Bundle {
-  val opBIsRS2 = Input(Bool()) // instead of immediate
-  val cmpResult = Output(UInt(1.W))
-}
-
 class AluDataIO extends Bundle {
   val rs1 = Input(UInt(1.W))
   val rs2 = Input(UInt(1.W))
@@ -40,7 +34,6 @@ class AluDataIO extends Bundle {
 }
 
 class AluIO extends Bundle {
-  val ctrl = new AluControlIO()
   val decode = Flipped(new DecodeToAluIO)
   val data = new AluDataIO()
   val count = new CountIO()
@@ -50,7 +43,7 @@ class AluIO extends Bundle {
 class Alu extends Module {
   val io = IO(new AluIO)
 
-  val operandB = Mux(io.ctrl.opBIsRS2, io.data.rs2, io.data.imm)
+  val operandB = Mux(io.decode.opBIsRS2, io.data.rs2, io.data.imm)
 
   // ~b + 1 (negate B operand)
   val plus1 = io.count.count0
@@ -98,7 +91,7 @@ class Alu extends Module {
   val resultLtBuf = Reg(UInt(1.W))
   when(io.count.enabled) { resultLtBuf := resultLt}
 
-  io.ctrl.cmpResult := Mux(io.decode.cmpEqual, resultEqual, resultLt)
+  io.decode.cmpResult := Mux(io.decode.cmpEqual, resultEqual, resultLt)
 
   // boolean operations
   val BoolLookupTable = "h8e96".U

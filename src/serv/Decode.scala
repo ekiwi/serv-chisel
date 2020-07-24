@@ -82,7 +82,7 @@ class Decode extends Module {
   // c) It's a conditional branch (opcode[0] == 0) of type bne,bge,bgeu (funct3[0] == 1) and ALU compare is false
   // Only valid during the last cycle of INIT, when the branch condition has
   // been calculated.
-  io.state.takeBranch := opcode(4) && !opcode(2) && (opcode(0) || (io.top.aluCmp ^ funct3(0)))
+  io.state.takeBranch := opcode(4) && !opcode(2) && (opcode(0) || (io.alu.cmpResult ^ funct3(0)))
 
   io.control.uType     := !opcode(4) && opcode(2) && opcode(0)
   io.control.jalOrJalr :=  opcode(4) &&              opcode(0)
@@ -156,7 +156,7 @@ class Decode extends Module {
 
   //0 (OP_B_SOURCE_IMM) when OPIMM
   //1 (OP_B_SOURCE_RS2) when BRANCH or OP
-  io.top.opBSource := opcode(3)
+  io.alu.opBIsRS2 := opcode(3)
 
   io.top.rdAluEn := !opcode(0) && opcode(2) && !opcode(4)
 }
@@ -206,6 +206,8 @@ class DecodeToAluIO extends Bundle {
   val shiftSigned = Output(Bool())
   val shiftRight = Output(Bool())
   val rdSelect = Output(Result())
+  val opBIsRS2 = Output(Bool()) // instead of immediate (op_b_source)
+  val cmpResult = Input(Bool())
 }
 
 class DecodeToRegisterFileIO extends Bundle {
@@ -221,7 +223,7 @@ class DecodeToMemoryIO extends Bundle {
   val signed = Output(Bool())
   val word = Output(Bool())
   val half = Output(Bool())
-  val cmd = Output(Bool())
+  val cmd = Output(Bool()) // dbus.we
 }
 
 class DecodeToCsrIO extends Bundle {
@@ -239,9 +241,7 @@ class DecodeToCsrIO extends Bundle {
 class DecodeToTopIO extends Bundle {
   val wbRdt = Input(UInt(32.W))
   val wbEn = Input(Bool())
-  val aluCmp = Input(Bool())
   val imm = Output(UInt(1.W))
-  val opBSource = Output(Bool())
   val rdCsrEn = Output(Bool())
   val rdAluEn = Output(Bool())
 }

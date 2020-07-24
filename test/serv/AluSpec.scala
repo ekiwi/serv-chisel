@@ -20,7 +20,7 @@ class AluSpec extends FlatSpec with ChiselScalatestTester  {
     clock.step()
     io.count.count0.poke(true.B)
     io.count.enabled.poke(true.B)
-    io.ctrl.opBIsRS2.poke(true.B)
+    io.decode.opBIsRS2.poke(true.B)
     conf(io.decode)
     // bit0
     io.data.rs1.poke((rs1 & 1).U)
