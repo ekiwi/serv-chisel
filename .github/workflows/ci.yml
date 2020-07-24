@@ -18,5 +18,8 @@ jobs:
       with:
         java-version: 11
 
+    - name: Compile
+      run: sbt compile
+
     - name: Unit Tests
       run: sbt test
