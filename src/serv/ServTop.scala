@@ -127,21 +127,8 @@ class ServTop(withCsr: Boolean) extends Module {
 class TopIO extends Bundle {
   val timerInterrupt = Input(Bool())
   val rf = Flipped(new RegisterFileIO)
-  val ibus = new ReadOnlyWishboneManager
-  val dbus = new ReadAndWriteWishboneManager
-}
-
-class ReadOnlyWishboneManager extends Bundle {
-  val adr = Output(UInt(32.W))
-  val cyc = Output(Bool())
-  val rdt = Input(UInt(32.W))
-  val ack = Input(Bool())
-}
-
-class ReadAndWriteWishboneManager extends ReadOnlyWishboneManager {
-  val dat = Output(UInt(32.W))
-  val sel = Output(UInt(4.W))
-  val we = Output(Bool())
+  val ibus = wishbone.WishBoneIO.ReadOnlyInitiator(32)
+  val dbus = wishbone.WishBoneIO.Initiator(32)
 }
 
 class TopIOWithFormal extends TopIO {

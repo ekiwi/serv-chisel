@@ -29,6 +29,6 @@ class ServTopWithRam(withCsr: Boolean, rfWidth: Int = 2) extends Module {
 
 class ServTopWithRamIO extends Bundle {
   val timerInterrupt = Input(Bool())
-  val ibus = new ReadOnlyWishboneManager
-  val dbus = new ReadAndWriteWishboneManager
+  val ibus = wishbone.WishBoneIO.ReadOnlyInitiator(32)
+  val dbus = wishbone.WishBoneIO.Initiator(32)
 }
