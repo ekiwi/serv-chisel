@@ -45,31 +45,37 @@ class WishBoneRamSpec extends FlatSpec with ChiselScalatestTester  {
     clock.step()
   }
 
+  def idle(clock: Clock, io: wishbone.WishBoneIO): Unit = {
+    io.cyc.poke(false.B)
+    clock.step()
+  }
+
 
   it should "read and write some data" in {
     val size = 256
     // limiting the address size helps shorten the trace length
-    val maxAddress = if(DebugMode) { 4 } else { size }
-    val transactions = if(DebugMode) { 200 } else { 1000 }
+    val maxAddress = if(DebugMode) { size } else { size }
+    val transactions = if(DebugMode) { 200 } else { 2000 }
 
     assert(maxAddress <= size)
     val random = new scala.util.Random(0)
     val model = new MemoryModel(size, random)
     test(new WishBoneRam(size)).withAnnotations(annos)  { dut =>
       (0 until transactions).foreach { _ =>
-        val readNotWrite = random.nextBoolean()
-        if(readNotWrite) {
-          val addr = BigInt(random.nextInt(maxAddress))
-          val (data, valid) = model.read(addr)
-          read(dut.clock, dut.io, addr, data, valid)
-        } else {
-          val addr = BigInt(random.nextInt(maxAddress))
-          val data = BigInt(32, random)
-          val mask = BigInt(4, random)
-          model.write(addr, data, mask)
-          write(dut.clock, dut.io, addr, data, mask)
+        random.nextInt(3) match {
+          case 0 =>
+            val addr = BigInt(random.nextInt(maxAddress))
+            val (data, valid) = model.read(addr)
+            read(dut.clock, dut.io, addr, data, valid)
+          case 1 =>
+            val addr = BigInt(random.nextInt(maxAddress))
+            val data = BigInt(32, random)
+            val mask = BigInt(4, random)
+            model.write(addr, data, mask)
+            write(dut.clock, dut.io, addr, data, mask)
+          case 2 =>
+            idle(dut.clock, dut.io)
         }
-
       }
     }
   }
