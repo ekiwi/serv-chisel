@@ -20,4 +20,20 @@ class ServTopWithRamSpec extends FlatSpec with ChiselScalatestTester  {
   it should "elaborate w/o csr" in {
     test(new ServTopWithRam(false)) { dut => }
   }
+
+  it should "add" in {
+    
+  }
+}
+
+class RiscvModel(random: scala.util.Random) {
+  private val regs: Array[BigInt] = Seq.tabulate(32)(i => if(i == 0) BigInt(0) else BigInt(32, random)).toArray
+  private val WordMask = (BigInt(1) << 32) - 1
+  def add(rd: Int, rs1: Int, rs2: Int): Unit = {
+    if(rd  > 0) {
+      regs(rd) = (regs(rs1) + regs(rs2)) & WordMask
+    }
+  }
+
+
 }
