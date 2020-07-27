@@ -37,12 +37,16 @@ class ServTopWithRamSpec extends FlatSpec with ChiselScalatestTester  {
   it should "load" in {
     test(new ServTopWithRam(true)).withAnnotations(WithVcd)  { dut =>
       val i = RiscV.loadWord(0xa8, 0, 1) // load address 0xab into x1
-      exec(dut.clock, dut.io, i)
+      exec(dut.clock, dut.io, i, Load(0xa8.U, 0.U))
     }
   }
 
+  sealed trait DataBusOp
+  case object Nop extends DataBusOp
+  case class Store(addr: UInt, value: UInt, sel: UInt) extends DataBusOp
+  case class Load(addr: UInt, value: UInt) extends DataBusOp
 
-  def exec(clock: Clock, dut: ServTopWithRamIO, instruction: UInt): Unit = {
+  def exec(clock: Clock, dut: ServTopWithRamIO, instruction: UInt, dbus: DataBusOp = Nop): Unit = {
     // disable interrupts
     dut.timerInterrupt.poke(false.B)
     // do not ack anything on the data bus
@@ -57,12 +61,37 @@ class ServTopWithRamSpec extends FlatSpec with ChiselScalatestTester  {
     clock.step()
 
     // Now we lower the ack and wait until the cpu is done processing the instruction
-    // TODO: deal with instructions that interact with the data bus
     dut.ibus.rdt.poke(0.U) // TODO: random data
     dut.ibus.ack.poke(false.B)
 
-    val MaxCycles = 64
+    val MaxCycles = 128
     var cycleCount = 0
+
+    if(dbus != Nop) {
+      // wait for data bus operation
+      while(!dut.dbus.cyc.peek().litToBoolean) {
+        clock.step()
+        cycleCount += 1
+        assert(cycleCount < MaxCycles)
+      }
+      clock.step()
+      cycleCount += 1
+      dut.dbus.ack.poke(true.B)
+      dbus match {
+        case Load(addr, value) =>
+          dut.dbus.rdt.poke(value)
+          dut.dbus.adr.expect(addr)
+          dut.dbus.we.expect(false.B)
+        case Store(addr, value, sel) =>
+          dut.dbus.adr.expect(addr)
+          dut.dbus.sel.expect(sel)
+          dut.dbus.dat.expect(value)
+          dut.dbus.we.expect(true.B)
+      }
+      clock.step()
+      dut.dbus.ack.poke(false.B)
+    }
+
     while(!dut.ibus.cyc.peek().litToBoolean) {
       clock.step()
       cycleCount += 1
