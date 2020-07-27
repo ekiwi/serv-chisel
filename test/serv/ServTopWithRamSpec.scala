@@ -50,14 +50,18 @@ class ServTopWithRamSpec extends FlatSpec with ChiselScalatestTester  {
     dut.ibus.rdt.poke(0.U) // TODO: random data
     dut.ibus.ack.poke(false.B)
 
+    val MaxCycles = 64
+    var cycleCount = 0
     while(!dut.ibus.cyc.peek().litToBoolean) {
       clock.step()
+      cycleCount += 1
+      assert(cycleCount < MaxCycles)
     }
   }
 
   it should "add" in {
-    val random = new scala.util.Random()
-    val model = new RiscvModel(random)
+    val random = new scala.util.Random(0)
+    val model = new RiscvModel(random, true)
     test(new ServTopWithRam(true)).withAnnotations(WithVcd)  { dut =>
       val rs1 = random.nextInt(32)
       val rs2 = random.nextInt(32)
@@ -75,23 +79,34 @@ class ServTopWithRamSpec extends FlatSpec with ChiselScalatestTester  {
   }
 }
 
-class RiscvModel(random: scala.util.Random) {
+class RiscvModel(random: scala.util.Random, debugMode: Boolean = false) {
   private val regs: Array[BigInt] = Seq.tabulate(32)(i => if(i == 0) BigInt(0) else BigInt(32, random)).toArray
   private val regsValid: Array[Boolean] = Seq.tabulate(32)(i => i == 0).toArray
   private val WordMask = (BigInt(1) << 32) - 1
-  private def assertRegs(rd: Int, rs1: Int, rs2: Int): Unit = {
+  private def debug(msg: String): Unit = if(debugMode) { println(msg) }
+  private def writeResult(rd: Int, result: BigInt, valid: Boolean): Unit = {
     assert(rd >= 0 && rd < 32)
-    assert(rs1 >= 0 && rs1 < 32)
-    assert(rs2 >= 0 && rs2 < 32)
-  }
-  private def writeResult(rd: Int, result: BigInt): Unit = {
     if(rd > 0) {
-      regs(rd) = result & WordMask
-      regsValid(rd) = true
+      val c = result & WordMask
+      debug(f"rd  (x${rd}%02d) = 0x${c}%08x ($valid)")
+      regs(rd) = c
+      regsValid(rd) = valid
     }
   }
+  private def loadOperands(rs1: Int, rs2: Int): (BigInt, BigInt, Boolean) = {
+    assert(rs1 >= 0 && rs1 < 32)
+    assert(rs2 >= 0 && rs2 < 32)
+    val (a,b) = (regs(rs1), regs(rs2))
+    assert(a.bitLength <= 32 && a >= 0)
+    assert(b.bitLength <= 32 && b >= 0)
+    val (validA, validB) = (regsValid(rs1), regsValid(rs2))
+    debug(f"rs1 (x${rs1}%02d) = 0x${a}%08x ($validA)")
+    debug(f"rs2 (x${rs2}%02d) = 0x${b}%08x ($validB)")
+    val valid = validA && validB
+    (a, b, valid)
+  }
   def add(rd: Int, rs1: Int, rs2: Int): Unit = {
-    assertRegs(rd, rs1, rs2)
-    writeResult(rd, regs(rs1) + regs(rs2))
+    val (a, b, valid) = loadOperands(rs1, rs2)
+    writeResult(rd, a + b, valid)
   }
 }
