@@ -16,7 +16,7 @@ class BufReg extends Module {
 
   val carry = Reg(UInt(1.W))
   val c_q = (io.rs1 & io.decode.rs1En) +& (io.imm & io.decode.immEn & !clearLsb) + carry
-  val q = c_q(1)
+  val q = c_q(0)
   // clear carry when not in init state
   carry := c_q(1) & io.count.init
 
