@@ -105,7 +105,7 @@ class ServTop(withCsr: Boolean) extends Module {
   mem.io.rs2 := rs2
 
   if(withCsr) {
-    val csr = Module(new Csr)
+    val csr = Module(new Csr).suggestName("csr")
     csr.io.count := count
     csr.io.timerInterrupt := io.timerInterrupt
     csr.io.dataIn := Mux(decode.io.csr.dSel, decode.io.csr.imm, rs1)
