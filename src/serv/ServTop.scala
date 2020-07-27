@@ -38,7 +38,7 @@ class ServTop(withCsr: Boolean) extends Module {
   state.io.ibus.ack := io.ibus.ack
   control.io.ibus.ack := io.ibus.ack
   decode.io.top.wbEn := io.ibus.cyc && io.ibus.ack
-  decode.io.top.wbRdt := io.ibus.rdt(31,2)
+  decode.io.top.wbRdt := io.ibus.rdt
 
   // connect to Register + CSR RAM
   io.rf.writeRequest := state.io.ram.writeRequest
