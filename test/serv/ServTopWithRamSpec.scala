@@ -36,7 +36,7 @@ class ServTopWithRamSpec extends FlatSpec with ChiselScalatestTester  {
 
   it should "load" in {
     test(new ServTopWithRam(true)).withAnnotations(WithVcd)  { dut =>
-      val i = RiscV.loadWord(0xab, 0, 1) // load address 0xab into x1
+      val i = RiscV.loadWord(0xa8, 0, 1) // load address 0xab into x1
       exec(dut.clock, dut.io, i)
     }
   }
