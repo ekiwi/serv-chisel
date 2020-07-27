@@ -18,11 +18,11 @@ object BooleanOperation extends ChiselEnum {
 }
 
 object Result extends ChiselEnum {
-  val None  = Value("b0000".U)
-  val Add   = Value("b0001".U)
-  val Shift = Value("b0010".U)
-  val Lt    = Value("b0100".U)
-  val Bool  = Value("b1000".U)
+  val None  = Value("b0000".U(4.W))
+  val Add   = Value("b0001".U(4.W))
+  val Shift = Value("b0010".U(4.W))
+  val Lt    = Value("b0100".U(4.W))
+  val Bool  = Value("b1000".U(4.W))
 }
 
 class AluDataIO extends Bundle {

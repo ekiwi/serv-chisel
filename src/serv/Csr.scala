@@ -59,9 +59,9 @@ class Csr extends Module {
     when(io.state.pendingIrq) {
       mCause3_0 := 7.U
     } .elsewhen(io.decode.eOp) {
-      mCause3_0 := (!io.decode.eBreak) ## "b011".U
+      mCause3_0 := (!io.decode.eBreak) ## "b011".U(3.W)
     } .elsewhen(io.memMisaligned) {
-      mCause3_0 := "b01".U ## io.memCmd ## "b0".U
+      mCause3_0 := "b01".U(2.W) ## io.memCmd ## "b0".U(1.W)
     } .otherwise {
       mCause3_0 := 0.U
     }
