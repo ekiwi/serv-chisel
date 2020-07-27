@@ -24,7 +24,7 @@ class BufReg extends Module {
   val newData = Mux(io.decode.loop && !io.count.init, data(0), q)
   when(enabled) { data := newData ## data(31, 1) }
   io.dataOut := data(0)
-  io.dataBusAddress := data(31,2) ## "b00".U
+  io.dataBusAddress := data(31,2) ## "b00".U(2.W)
 
   val (lsb_1, lsb_0) = (Reg(UInt(1.W)), Reg(UInt(1.W)))
   io.lsb := lsb_1 ## lsb_0
