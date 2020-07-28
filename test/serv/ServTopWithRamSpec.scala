@@ -37,7 +37,7 @@ class ServTopWithRamSpec extends FlatSpec with ChiselScalatestTester  {
   it should "load" in {
     test(new ServTopWithRam(true)).withAnnotations(WithVcd)  { dut =>
       val i = RiscV.loadWord(0xa8, 0, 1) // load address 0xab into x1
-      exec(dut.clock, dut.io, i, Load(0xa8.U, 0.U))
+      exec(dut.clock, dut.io, i, Load(0xa8.U, "haaaaaaaa".U))
     }
   }
 
@@ -64,18 +64,15 @@ class ServTopWithRamSpec extends FlatSpec with ChiselScalatestTester  {
     dut.ibus.rdt.poke(0.U) // TODO: random data
     dut.ibus.ack.poke(false.B)
 
-    val MaxCycles = 128
+    val MaxCycles = 64 + 4
     var cycleCount = 0
 
     if(dbus != Nop) {
       // wait for data bus operation
       while(!dut.dbus.cyc.peek().litToBoolean) {
-        clock.step()
-        cycleCount += 1
-        assert(cycleCount < MaxCycles)
+        clock.step() ; cycleCount += 1 ; assert(cycleCount <= MaxCycles)
       }
-      clock.step()
-      cycleCount += 1
+      clock.step() ; cycleCount += 1 ; assert(cycleCount <= MaxCycles)
       dut.dbus.ack.poke(true.B)
       dbus match {
         case Load(addr, value) =>
@@ -93,9 +90,7 @@ class ServTopWithRamSpec extends FlatSpec with ChiselScalatestTester  {
     }
 
     while(!dut.ibus.cyc.peek().litToBoolean) {
-      clock.step()
-      cycleCount += 1
-      assert(cycleCount < MaxCycles)
+      clock.step() ; cycleCount += 1 ; assert(cycleCount <= MaxCycles)
     }
   }
 
