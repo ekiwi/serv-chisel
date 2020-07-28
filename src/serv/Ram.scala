@@ -46,7 +46,7 @@ class RamInterface(width: Int, csrRegs: Int = 4) extends Module {
   writeData1Buffer := io.rf.ports.write1.data ## writeData1Buffer.split(width-0).lsb.split(1).msb
 
   when(writeGo) { writeCount := writeCount + 1.U }
-  when(RegNext(io.rf.writeRequest)) { writeGo := true.B }
+  when(writeRequestBuffer) { writeGo := true.B }
   when(writeCount === "b11111".U) { writeGo := false.B }
 
   // Read Side
