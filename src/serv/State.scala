@@ -70,7 +70,7 @@ class State(withCsr: Boolean = true) extends Module {
   io.ram.writeRequest := (
     (io.decode.shiftOp && io.alu.shiftDone && stageTwoPending) ||
     (io.decode.memOp && io.dbus.ack) ||
-    (stageTwoRequest && (io.decode.sltOp | io.decode.branchOp) && !trapPending))
+    (stageTwoRequest && (io.decode.sltOp | io.decode.branchOp)) && !trapPending)
 
   io.rf.writeEnable := io.decode.rdOp && countEnabled && !init
 
