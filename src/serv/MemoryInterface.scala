@@ -18,7 +18,7 @@ class MemoryInterface(withCsr: Boolean) extends Module {
 
   val data = Reg(UInt(32.W))
   val dataEnabled = io.enabled && !byteCountPlusLsb(2)
-  when(dataEnabled) { data := io.rs2 ## data(31,2) }
+  when(dataEnabled) { data := io.rs2 ## data(31,1) }
   when(io.dbus.ack) { data := io.dbus.rdt }
 
   val dataCur =
