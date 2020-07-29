@@ -10,9 +10,21 @@ object RiscV {
   /** rd = *(rs1 + offset) */
   def loadWord(offset: Int, rs1: Int, rd: Int): UInt = // LW
     i(imm = offset, rs1=rs1, funct3 = "010", rd=rd, opcode = "0000011")
+  def loadHalf(offset: Int, rs1: Int, rd: Int): UInt = // LH
+    i(imm = offset, rs1=rs1, funct3 = "001", rd=rd, opcode = "0000011")
+  def loadByte(offset: Int, rs1: Int, rd: Int): UInt = // LB
+    i(imm = offset, rs1=rs1, funct3 = "000", rd=rd, opcode = "0000011")
+  def loadHalfUnsigned(offset: Int, rs1: Int, rd: Int): UInt = // LHU
+    i(imm = offset, rs1=rs1, funct3 = "101", rd=rd, opcode = "0000011")
+  def loadByteUnsigned(offset: Int, rs1: Int, rd: Int): UInt = // LBU
+    i(imm = offset, rs1=rs1, funct3 = "100", rd=rd, opcode = "0000011")
   /**  */
   def storeWord(offset: Int, rs1: Int, rs2: Int): UInt = // SW
     s(imm = offset, rs2=rs2, rs1=rs1, funct3 = "010", opcode = "0100011")
+  def storeHalf(offset: Int, rs1: Int, rs2: Int): UInt = // SH
+    s(imm = offset, rs2=rs2, rs1=rs1, funct3 = "001", opcode = "0100011")
+  def storeByte(offset: Int, rs1: Int, rs2: Int): UInt = // SB
+    s(imm = offset, rs2=rs2, rs1=rs1, funct3 = "000", opcode = "0100011")
 
   def add(rs1: Int, rs2: Int, rd: Int): UInt =
     r(funct7 = "0000000", rs2 = rs2, rs1 = rs1, funct3 = "000", rd = rd, opcode = "0110011")
