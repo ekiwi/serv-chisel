@@ -24,24 +24,27 @@ class ServTopWithRamSpec extends FlatSpec with ChiselScalatestTester  {
 
   it should "add" in {
     val random = new scala.util.Random(0)
-    val model = new RiscvModel(random, true)
-    test(new ServTopWithRam(true)).withAnnotations(WithVcd)  { dut =>
-      val rs1 = random.nextInt(32)
-      val rs2 = random.nextInt(32)
-      val rd = random.nextInt(32)
-      val a = BigInt(32, random)
-      val b = BigInt(32, random)
-      val WordMask = (BigInt(1) << 32) - 1
-      val c = (a + b) & WordMask
-      println(s"$a + $b = $c")
+    val DebugMode = false
+    test(new ServTopWithRam(true))
+      .withAnnotations(if(DebugMode) WithVcd else NoVcd)  { dut =>
+      (0 until 20).foreach { _ =>
+        val rs1 = random.nextInt(32)
+        val rs2 = random.nextInt(32)
+        val rd = random.nextInt(31) + 1
+        val a = if(rs1 == 0) BigInt(0) else BigInt(32, random)
+        val b = if(rs2 == 0) BigInt(0) else BigInt(32, random)
+        val WordMask = (BigInt(1) << 32) - 1
+        val c = (a + b) & WordMask
+        if(DebugMode) println(s"$a (x$rs1) + $b (x$rs2) = $c (x$rd)")
 
-      // load values into registers
-      exec(dut.clock, dut.io, RiscV.loadWord(0, 0, rs1), Load(0.U, a.U))
-      exec(dut.clock, dut.io, RiscV.loadWord(0, 0, rs2), Load(0.U, b.U))
-      // do add
-      exec(dut.clock, dut.io, RiscV.add(rs1, rs2, rd))
-      // store result
-      exec(dut.clock, dut.io, RiscV.storeWord(0, 0, rd), Store(0.U, c.U, 15.U))
+        // load values into registers
+        if(rs1 > 0) exec(dut.clock, dut.io, RiscV.loadWord(0, 0, rs1), Load(0.U, a.U))
+        if(rs2 > 0) exec(dut.clock, dut.io, RiscV.loadWord(0, 0, rs2), Load(0.U, b.U))
+        // do add
+        exec(dut.clock, dut.io, RiscV.add(rs1, rs2, rd))
+        // store result
+        exec(dut.clock, dut.io, RiscV.storeWord(0, 0, rd), Store(0.U, c.U, 15.U))
+      }
     }
   }
 
