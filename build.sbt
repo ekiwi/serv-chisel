@@ -4,8 +4,11 @@ scalaVersion := "2.12.7"
 
 scalacOptions := Seq("-deprecation", "-unchecked", "-Xsource:2.11")
 
-libraryDependencies += "edu.berkeley.cs" %% "chisel3" % "3.3.2"
-libraryDependencies += "edu.berkeley.cs" %% "chisel-testers2" % "0.2.2" % Test
+// SNAPSHOT repositories
+resolvers ++= Seq(Resolver.sonatypeRepo("snapshots"), Resolver.sonatypeRepo("releases"))
+
+libraryDependencies += "edu.berkeley.cs" %% "chisel3" % "3.4-SNAPSHOT"
+libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.3-SNAPSHOT" % Test
 
 scalaSource in Compile := baseDirectory.value / "src"
 scalaSource in Test := baseDirectory.value / "test"
