@@ -25,7 +25,7 @@ class WishBoneRam(depth: Int = 256) extends Module {
   //val writeData = Seq(io.dat(31,24), io.dat(23,16), io.dat(15,8), io.dat(7,0))
   // asUInt on vectors returns a weird order
   val writeData = Seq(io.dat(7,0), io.dat(15,8), io.dat(23,16), io.dat(31,24))
-  val writeMask = io.sel.toBools()
+  val writeMask = io.sel.asBools()
   when(io.cyc && io.we) {
     mem.write(wordAlignedAddress, VecInit(writeData), VecInit(writeMask))
   }
