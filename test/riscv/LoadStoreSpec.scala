@@ -55,30 +55,33 @@ class LoadStoreSpec extends InstructionSpec  {
         val loadUnsigned = random.nextBoolean()
         val storeSize = Size.getRandom(random)
         // we can only test positive offsets atm since we use x0 and negative addresses do not make sense
-        // we also need to align the offset for words
-        // TODO: relax offset restriction for non-word accesses
-        val offset = (BigInt(9, random) << 2).toInt
+        val baseLoadOffset = BigInt(11, random)
+        val baseStoreOffset = BigInt(11, random)
 
         // println(s"value=$value, reg=$reg, offset=$offset")
 
+        // aligns offset depending on load/store size
+        val loadOffset  = baseLoadOffset & Size.toAddressMask(loadSize, 11)
+        val storeOffset = baseStoreOffset & Size.toAddressMask(loadSize, 11)
+
         // encode instructions
         val lw = loadSize match {
-          case Size.Word => RiscV.loadWord(offset, 0, reg)
+          case Size.Word => RiscV.loadWord(loadOffset.toInt, 0, reg)
           case Size.Half => if(loadUnsigned) {
-            RiscV.loadHalfUnsigned(offset, 0, reg)
+            RiscV.loadHalfUnsigned(loadOffset.toInt, 0, reg)
           } else {
-            RiscV.loadHalf(offset, 0, reg)
+            RiscV.loadHalf(loadOffset.toInt, 0, reg)
           }
           case Size.Byte => if(loadUnsigned) {
-            RiscV.loadByteUnsigned(offset, 0, reg)
+            RiscV.loadByteUnsigned(loadOffset.toInt, 0, reg)
           } else {
-            RiscV.loadByte(offset, 0, reg)
+            RiscV.loadByte(loadOffset.toInt, 0, reg)
           }
         }
         val sw = storeSize match {
-          case Size.Word => RiscV.storeWord(offset, 0, reg)
-          case Size.Half => RiscV.storeHalf(offset, 0, reg)
-          case Size.Byte => RiscV.storeByte(offset, 0, reg)
+          case Size.Word => RiscV.storeWord(storeOffset.toInt, 0, reg)
+          case Size.Half => RiscV.storeHalf(storeOffset.toInt, 0, reg)
+          case Size.Byte => RiscV.storeByte(storeOffset.toInt, 0, reg)
         }
 
         val expectedSel = storeSize match {
@@ -99,9 +102,9 @@ class LoadStoreSpec extends InstructionSpec  {
           (value & loadMask) | signMask
         }
 
-        exec(dut.clock, dut.io, lw, Load(offset.U, value.U))
+        exec(dut.clock, dut.io, lw, Load(loadOffset.U, value.U))
         // the upper bits are actually undefined ...
-        exec(dut.clock, dut.io, sw, Store(offset.U, loadValue.U, expectedSel))
+        exec(dut.clock, dut.io, sw, Store(storeOffset.U, loadValue.U, expectedSel))
       }
     }
   }
@@ -118,5 +121,21 @@ object Size extends Enumeration {
     case Size.Word => (BigInt(1) << 32) - 1
     case Size.Half => (BigInt(1) << 16) - 1
     case Size.Byte => (BigInt(1) <<  8) - 1
+  }
+  def generateAlignedLSBs(random: scala.util.Random, v: this.Value): BigInt = v match {
+    case Size.Word => BigInt(0)
+    case Size.Half => random.nextInt(3)
+    case Size.Byte => random.nextInt(4)
+  }
+  def generateAlignedAddress(random: scala.util.Random, v: this.Value): BigInt = {
+    val lsbs = generateAlignedLSBs(random, v)
+    val msbs = BigInt(30, random)
+    (msbs << 2) | lsbs
+  }
+  private val mask4 = (BigInt(1) << 4) - 1
+  def getWriteMask(v: this.Value, addr: BigInt): BigInt = v match {
+    case Size.Word => mask4
+    case Size.Half => (BigInt(3) << (addr & 3).toInt) & mask4
+    case Size.Byte => (BigInt(1) << (addr & 3).toInt) & mask4
   }
 }
