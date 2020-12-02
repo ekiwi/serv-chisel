@@ -12,3 +12,4 @@ libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.3.0" % Test
 
 scalaSource in Compile := baseDirectory.value / "src"
 scalaSource in Test := baseDirectory.value / "test"
+resourceDirectory in Test := baseDirectory.value / "test" / "resources"
