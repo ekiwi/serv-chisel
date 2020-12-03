@@ -6,7 +6,7 @@ package servant
 
 import org.scalatest._
 import chisel3.tester._
-import chiseltest.internal.WriteVcdAnnotation
+import chiseltest.internal.{VerilatorBackendAnnotation, WriteVcdAnnotation}
 import chisel3.tester.experimental.TestOptionBuilder._
 import chisel3._
 
@@ -50,6 +50,13 @@ class WishBoneRamSpec extends FlatSpec with ChiselScalatestTester  {
     clock.step()
   }
 
+  it should "read preloaded data" in {
+    val data = BigInt("11223344", 16)
+    val preload = List(BigInt("44", 16), BigInt("33", 16), BigInt("22", 16), BigInt("11", 16))
+    test(new WishBoneRam(preload.size, preload)).withAnnotations(annos) { dut =>
+      read(dut.clock, dut.io, 0, data, true)
+    }
+  }
 
   it should "read and write some data" in {
     val size = 256
@@ -59,8 +66,9 @@ class WishBoneRamSpec extends FlatSpec with ChiselScalatestTester  {
 
     assert(maxAddress <= size)
     val random = new scala.util.Random(0)
-    val model = new MemoryModel(size, random)
-    test(new WishBoneRam(size)).withAnnotations(annos)  { dut =>
+    val preload = Seq.tabulate(size)(_ => BigInt(8, random))
+    val model = new MemoryModel(size, random, preload)
+    test(new WishBoneRam(size, preload)).withAnnotations(annos)  { dut =>
       (0 until transactions).foreach { _ =>
         random.nextInt(3) match {
           case 0 =>
@@ -81,10 +89,22 @@ class WishBoneRamSpec extends FlatSpec with ChiselScalatestTester  {
   }
 }
 
-class MemoryModel(size: Int, random: scala.util.Random) {
+class MemoryModel(size: Int, random: scala.util.Random, preload: Iterable[BigInt]= List()) {
   assert(size % 4 == 0)
-  private val mem: Array[BigInt] = Seq.tabulate(size / 4)(_ => BigInt(32, random)).toArray
-  private val valid: Array[Boolean] = Seq.tabulate(size)(_ => false).toArray
+  assert(preload.isEmpty || preload.size == size)
+  private val mem: Array[BigInt] = if(preload.isEmpty) {
+    Seq.tabulate(size / 4)(_ => BigInt(32, random)).toArray
+  } else {
+    val bytes = preload.iterator
+    (0 until (size / 4)).map { ii =>
+      Seq(bytes.next(), bytes.next() << 8, bytes.next() << 16, bytes.next() << 24).reduce((a,b) => a | b)
+    }.toArray
+  }
+  private val valid: Array[Boolean] = if(preload.isEmpty) {
+    Seq.tabulate(size)(_ => false).toArray
+  } else {
+    Seq.tabulate(size)(_ => true).toArray
+  }
   private val AddressMask = ((BigInt(1) << 32) - 1) & (~BigInt(3))
   private val ByteMask = (BigInt(1)<<8) - 1
   private val WordMask = (BigInt(1)<<32) - 1
