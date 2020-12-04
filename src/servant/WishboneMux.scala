@@ -13,6 +13,7 @@ class WishboneMuxIO extends Bundle {
   val mem = wishbone.WishBoneIO.Initiator(32)
   val gpio = wishbone.WishBoneIO.Initiator(0)
   val timer = wishbone.WishBoneIO.Initiator(0)
+  val test = wishbone.WishBoneIO.Initiator(32)
 }
 
 
@@ -23,7 +24,7 @@ class WishboneMux extends Module {
   io.cpu.rdt := Mux(select(1), io.timer.rdt, Mux(select(0), io.gpio.rdt, io.mem.rdt))
 
   val ack = RegInit(false.B)
-  ack := io.cpu.cyc && !io.cpu.ack
+  ack := io.cpu.cyc && !ack
   io.cpu.ack := ack
 
   io.mem.adr := io.cpu.adr
@@ -42,5 +43,11 @@ class WishboneMux extends Module {
   io.timer.dat := io.cpu.dat
   io.timer.sel := "b1111".U
   io.timer.we := io.cpu.we
-  io.timer.cyc := io.cpu.cyc & select(1)
+  io.timer.cyc := io.cpu.cyc & (select === 2.U)
+
+  io.test.adr := io.cpu.adr
+  io.test.dat := io.cpu.dat
+  io.test.sel := "b1111".U
+  io.test.we := io.cpu.we
+  io.test.cyc := io.cpu.cyc & (select === 2.U) // somehow it looks like timer and test device might be swapped in the original sev...
 }

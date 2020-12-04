@@ -13,7 +13,7 @@ class ServantIO extends Bundle {
   val q = Output(UInt(1.W))
 }
 
-class Servant(memSize: Int, program: Seq[BigInt]) extends Module {
+class Servant(memSize: Int, program: Seq[BigInt]) extends MultiIOModule {
   require(program.size <= memSize)
 
   val io = IO(new ServantIO)
@@ -35,4 +35,18 @@ class Servant(memSize: Int, program: Seq[BigInt]) extends Module {
 
   // TODO: timer
   cpu.io.timerInterrupt := false.B
+
+  // test device
+  val test = IO(new TestIO)
+  if(true) {
+    val testDevice = Module(new TestDevice)
+    test := testDevice.io.out
+    mux.io.test <> testDevice.io.bus
+    Some(test)
+  } else {
+    test <> DontCare
+    mux.io.test <> DontCare
+    None
+  }
+
 }

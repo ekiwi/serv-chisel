@@ -10,6 +10,7 @@ import chisel3.tester._
 import chiseltest.internal.{VerilatorBackendAnnotation, WriteVcdAnnotation}
 import chisel3.tester.experimental.TestOptionBuilder.ChiselScalatestOptionBuilder
 import servant.Servant
+import scala.collection.mutable
 
 
 class ComplianceTest extends FlatSpec with ChiselScalatestTester {
@@ -21,12 +22,24 @@ class ComplianceTest extends FlatSpec with ChiselScalatestTester {
   it should "pass the ADD test" in {
     val program = ComplianceTest.load("ADD")
     val memSize = 8192
-    test(new Servant(memSize, program)).withAnnotations(WithVcd) { dut =>
+    test(new Servant(memSize, program)).withAnnotations(WithVerilator ++ WithVcd) { dut =>
       dut.clock.setTimeout(10000000)
-      (0 until 1024).foreach { _ =>
-        println(dut.io.q.peek().litValue())
+      var done = false
+      val output = new mutable.ArrayBuffer[BigInt]()
+      while(!done) {
+        if(dut.test.dataValid.peek().litToBoolean) {
+          val data = dut.test.data.peek().litValue() & 0xff
+          output.append(data)
+        }
+        if(dut.test.stop.peek().litToBoolean) {
+          println("Test complete")
+          done = true
+        }
         dut.clock.step()
       }
+
+      val result = output.map(_.toChar).mkString("")
+      println(result)
     }
   }
 }
