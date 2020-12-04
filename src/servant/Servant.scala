@@ -25,6 +25,8 @@ class Servant(memSize: Int, program: Seq[BigInt]) extends Module {
   val ram = Module(new WishBoneRam(depth = memSize, preload = program))
   val cpu = Module(new ServTopWithRam(withCsr = true))
 
+  dontTouch(cpu.io)
+
   arbiter.io.cpu <> ram.io
   arbiter.io.dbus <> cpu.io.dbus
   arbiter.io.ibus <> cpu.io.ibus
