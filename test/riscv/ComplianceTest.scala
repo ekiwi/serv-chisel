@@ -21,7 +21,7 @@ class ComplianceTest extends FlatSpec with ChiselScalatestTester {
   it should "pass the ADD test" in {
     val program = ComplianceTest.load("ADD")
     val memSize = 8192
-    test(new Servant(memSize, program)).withAnnotations(WithVerilator ++ WithVcd) { dut =>
+    test(new Servant(memSize, program)).withAnnotations(WithVcd) { dut =>
       dut.clock.setTimeout(10000000)
       (0 until 1024).foreach { _ =>
         println(dut.io.q.peek().litValue())
