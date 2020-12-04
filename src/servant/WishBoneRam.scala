@@ -33,12 +33,14 @@ class WishBoneRam(depth: Int = 256, preload: Seq[BigInt] = List()) extends Modul
   }
 
   // preload support
-  require(preload.isEmpty || preload.size == depth)
+  require(preload.isEmpty || preload.size <= depth)
   if(preload.nonEmpty) {
+    // zero padding at the end
+    val bytes = preload ++ Seq.fill(depth - preload.size)(BigInt(0))
     // mem(0) stores the MSB of a word => offset = 3
     // mem(3) stores the LSB of a word => offset = 0
     (0 to 3).zip(mem.reverse).map { case (offset, m) =>
-      val groupedBytes = preload.grouped(4)
+      val groupedBytes = bytes.grouped(4)
       val data = groupedBytes.map(_(offset)).toSeq
       annotate(new ChiselAnnotation {
         override def toFirrtl = MemoryArrayInitAnnotation(m.toTarget, data)
