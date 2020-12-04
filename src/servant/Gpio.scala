@@ -21,4 +21,5 @@ class Gpio extends Module {
     output := io.bus.dat(0)
   }
   io.bus.ack := DontCare
+  io.output := output
 }

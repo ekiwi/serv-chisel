@@ -18,18 +18,20 @@ class Servant(memSize: Int, program: Seq[BigInt]) extends Module {
 
   val io = IO(new ServantIO)
 
-  // TODO: add GPIO support
-  io.q := 0.U
-
   val arbiter = Module(new Arbiter)
+  val mux = Module(new WishboneMux)
+  val gpio = Module(new Gpio)
   val ram = Module(new WishBoneRam(depth = memSize, preload = program))
   val cpu = Module(new ServTopWithRam(withCsr = true))
 
-  dontTouch(cpu.io)
-
-  arbiter.io.cpu <> ram.io
+  mux.io.timer <> DontCare
+  mux.io.gpio <> gpio.io.bus
+  mux.io.mem <> ram.io
+  arbiter.io.cpu <> mux.io.cpu
   arbiter.io.dbus <> cpu.io.dbus
   arbiter.io.ibus <> cpu.io.ibus
+
+  io.q := gpio.io.output
 
   // TODO: timer
   cpu.io.timerInterrupt := false.B
