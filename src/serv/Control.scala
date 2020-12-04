@@ -26,7 +26,7 @@ class Control(resetPc: Int = 0, withCsr: Boolean = true) extends Module{
 
   val plus4 = io.count.count2
   val pcPlus4Carry = Reg(UInt(1.W))
-  val pcPlus4 = pc +& plus4 + pcPlus4Carry
+  val pcPlus4 = pc(0) +& plus4 + pcPlus4Carry
   pcPlus4Carry := io.state.pcEnable & pcPlus4(1)
 
   val newPc = Wire(Bool())
