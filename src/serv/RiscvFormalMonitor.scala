@@ -53,6 +53,7 @@ class InstructionMonitor extends MultiIOModule {
 
   val pc = RegInit(0.U(32.W))
   val nextPc = io.ibus.adr
+  dontTouch(nextPc)
   when(valid) { pc := nextPc }
 
   val order = RegInit(0.U(64.W))
@@ -93,8 +94,6 @@ class InstructionMonitor extends MultiIOModule {
   val memWriteMask = RegInit(0.U(4.W))
   val memReadData = RegInit(0.U(32.W))
   val memWriteData = RegInit(0.U(32.W))
-  val memReadActive = io.dbus.cyc && io.dbus.ack && !io.dbus.we
-  val memWriteActive = io.dbus.cyc && io.dbus.ack && io.dbus.we
 
   when(io.dbus.ack) {
     memAddress := io.dbus.adr
@@ -114,12 +113,12 @@ class InstructionPrinter extends InstructionMonitor {
   when(valid) {
     printf("pc = %x ; r[%d] = %x ; r[%d] = %x ; r[%d] = %x ;\n",
       pc, rs1Address, rs1Data, rs2Address, rs2Data, rdAddress, rdData)
-  }
-  when(memReadActive && memReadMask =/= 0.U) {
-    printf("mem[%x] & %x -> %x\n", memAddress, memReadMask, memReadData)
-  }
-  when(memWriteActive && memWriteMask =/= 0.U) {
-    printf("mem[%x] & %x <- %x\n", memAddress, memWriteMask, memWriteData)
+    when(memReadMask =/= 0.U) {
+      printf("mem[%x] & %b -> %x\n", memAddress, memReadMask, memReadData)
+    }
+    when(memWriteMask =/= 0.U) {
+      printf("mem[%x] & %b <- %x\n", memAddress, memWriteMask, memWriteData)
+    }
   }
 }
 
