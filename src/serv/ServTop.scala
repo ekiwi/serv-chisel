@@ -122,6 +122,17 @@ class ServTop(withCsr: Boolean) extends Module {
     state.io.csr.newIrq := false.B
     rfInterface.io.rd.csrData := 0.U
   }
+
+  // debug printing
+  val monitor: InstructionMonitor = Module(new InstructionPrinter)
+  monitor.io.pcEnable := state.io.control.pcEnable
+  monitor.io.countDone := state.io.count.done
+  monitor.io.init := state.io.count.init
+  monitor.io.rfReady := io.rf.ready
+  monitor.io.ibus := io.ibus
+  monitor.io.dbus := io.dbus
+  monitor.io.rf := rfInterface.io
+  monitor.io.decode := decode.io.state
 }
 
 class TopIO extends Bundle {
