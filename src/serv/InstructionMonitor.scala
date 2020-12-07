@@ -86,8 +86,11 @@ class InstructionMonitor extends MultiIOModule {
 
 trait InstructionPrinter extends InstructionMonitor {
   when(valid) {
-    printf("pc = %x ; r[%d] = %x ; r[%d] = %x ; r[%d] = %x ;\n",
-      pc, rs1Address, rs1Data, rs2Address, rs2Data, rdAddress, rdData)
+    printf("%x: %x ; r[%d] = %x ; r[%d] = %x ;", pc, instruction, rs1Address, rs1Data, rs2Address, rs2Data)
+    when(rdAddress =/= 0.U) {
+      printf(" r[%d] = %x ;", rdAddress, rdData)
+    }
+    printf("\n")
     when(memReadMask =/= 0.U) {
       printf("mem[%x] & %b -> %x\n", memAddress, memReadMask, memReadData)
     }
