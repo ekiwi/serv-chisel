@@ -8,31 +8,6 @@ package serv
 
 import chisel3._
 
-// see https://github.com/SymbioticEDA/riscv-formal/blob/master/docs/rvfi.md
-class RiscvFormalInterface extends Bundle {
-  val valid = Bool()
-  val order = UInt(64.W)
-  val insn = UInt(32.W)
-  val trap = Bool()
-  val halt = Bool()
-  val intr = Bool()
-  val mode = UInt(2.W)
-  val ixl = UInt(2.W)
-  val rs1_addr = UInt(4.W)
-  val rs2_addr = UInt(4.W)
-  val rs1_rdata = UInt(32.W)
-  val rs2_rdata = UInt(32.W)
-  val rd_addr = UInt(4.W)
-  val rd_wdata = UInt(32.W)
-  val pc_rdata = UInt(32.W)
-  val pc_wdata = UInt(32.W)
-  val mem_addr = UInt(32.W)
-  val mem_rmask = UInt(4.W)
-  val mem_wmask = UInt(4.W)
-  val mem_rdata = UInt(32.W)
-  val mem_wdata = UInt(32.W)
-}
-
 class InstructionMonitorIO extends Bundle {
   val countDone = Input(Bool())
   val pcEnable = Input(Bool())
@@ -109,7 +84,7 @@ class InstructionMonitor extends MultiIOModule {
   }
 }
 
-class InstructionPrinter extends InstructionMonitor {
+trait InstructionPrinter extends InstructionMonitor {
   when(valid) {
     printf("pc = %x ; r[%d] = %x ; r[%d] = %x ; r[%d] = %x ;\n",
       pc, rs1Address, rs1Data, rs2Address, rs2Data, rdAddress, rdData)
@@ -122,8 +97,33 @@ class InstructionPrinter extends InstructionMonitor {
   }
 }
 
-/*
-class RiscvFormalMonitor extends Module {
+// see https://github.com/SymbioticEDA/riscv-formal/blob/master/docs/rvfi.md
+class RiscvFormalInterface extends Bundle {
+  val valid = Bool()
+  val order = UInt(64.W)
+  val insn = UInt(32.W)
+  val trap = Bool()
+  val halt = Bool()
+  val intr = Bool()
+  val mode = UInt(2.W)
+  val ixl = UInt(2.W)
+  val rs1_addr = UInt(4.W)
+  val rs2_addr = UInt(4.W)
+  val rs1_rdata = UInt(32.W)
+  val rs2_rdata = UInt(32.W)
+  val rd_addr = UInt(4.W)
+  val rd_wdata = UInt(32.W)
+  val pc_rdata = UInt(32.W)
+  val pc_wdata = UInt(32.W)
+  val mem_addr = UInt(32.W)
+  val mem_rmask = UInt(4.W)
+  val mem_wmask = UInt(4.W)
+  val mem_rdata = UInt(32.W)
+  val mem_wdata = UInt(32.W)
+}
+
+class RiscvFormalMonitor extends InstructionMonitor {
+  val rvfi = IO(new RiscvFormalInterface)
 
   // Constants
   val halt = false.B
@@ -131,5 +131,27 @@ class RiscvFormalMonitor extends Module {
   val mode = 2.U(2.W)
   val ixl = 1.U(2.W)
 
+  // connect formal interface
+  rvfi.valid := valid
+  rvfi.order := order
+  rvfi.insn := instruction
+  rvfi.trap := trap
+  rvfi.halt := halt
+  rvfi.intr := interrupt
+  rvfi.mode := mode
+  rvfi.ixl := ixl
+  rvfi.rs1_addr := rs1Address
+  rvfi.rs2_addr := rs2Address
+  rvfi.rs1_rdata := rs1Data
+  rvfi.rs2_rdata := rs2Data
+  rvfi.rd_addr := rdAddress
+  rvfi.rd_wdata := rdData
+  rvfi.pc_rdata := pc
+  rvfi.pc_wdata := nextPc
+  rvfi.mem_addr := memAddress
+  rvfi.mem_rmask := memReadMask
+  rvfi.mem_wmask := memWriteMask
+  rvfi.mem_rdata := memReadData
+  rvfi.mem_wdata := memWriteData
 }
- */
+

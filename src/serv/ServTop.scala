@@ -124,7 +124,7 @@ class ServTop(withCsr: Boolean) extends Module {
   }
 
   // debug printing
-  val monitor: InstructionMonitor = Module(new InstructionPrinter)
+  val monitor: InstructionMonitor = Module(new InstructionMonitor with InstructionPrinter)
   monitor.io.pcEnable := state.io.control.pcEnable
   monitor.io.countDone := state.io.count.done
   monitor.io.init := state.io.count.init
