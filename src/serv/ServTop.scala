@@ -141,7 +141,3 @@ class TopIO extends Bundle {
   val ibus = wishbone.WishBoneIO.ReadOnlyInitiator(32)
   val dbus = wishbone.WishBoneIO.Initiator(32)
 }
-
-class TopIOWithFormal extends TopIO {
-  val rvfi = new RVFormalInterface
-}
