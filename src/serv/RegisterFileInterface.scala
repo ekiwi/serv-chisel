@@ -118,8 +118,3 @@ class RegisterFileTrapIO extends Bundle {
   val badPC = Input(UInt(1.W))
   val csrPC = Output(UInt(1.W))
 }
-
-class RegisterFileReadPortIO extends Bundle {
-  val address = Input(UInt(5.W))
-  val data = Output(UInt(1.W))
-}
