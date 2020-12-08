@@ -15,7 +15,7 @@ resolvers += s"Github Package Registry at $ghurl" at ghurl
 
 libraryDependencies += "edu.berkeley.cs" %% "chisel3" % "3.4.1"
 libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.3.1" % Test
-libraryDependencies += "edu.berkeley.cs" %% "paso" % "0.1.1-367-9757997f" % Test
+libraryDependencies += "edu.berkeley.cs" %% "paso" % "0.4.1" % Test
 
 scalaSource in Compile := baseDirectory.value / "src"
 scalaSource in Test := baseDirectory.value / "test"
