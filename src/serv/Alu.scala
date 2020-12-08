@@ -88,6 +88,7 @@ class Alu extends Module {
   val ltBuf = Reg(UInt(1.W))
   val ltSign = io.count.done & !io.decode.cmpUnsigned
   val resultLt = Mux(equal, ltBuf, operandB ^ ltSign)
+  ltBuf := resultLt & io.count.enabled
   val resultLtBuf = Reg(UInt(1.W))
   when(io.count.enabled) { resultLtBuf := resultLt}
 
