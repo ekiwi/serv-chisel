@@ -9,19 +9,17 @@ import paso._
 import chisel3._
 
 class RiscVSpec extends UntimedModule {
-  val reg = Mem(31, UInt(32.W))
+  val reg = Mem(32, UInt(32.W)) // reg(0) remains unused
 
   private def readReg(addr: UInt): UInt = {
     require(addr.getWidth == 5)
-    Mux(addr === 0.U, 0.U, reg.read(addr - 1.U))
+    Mux(addr === 0.U, 0.U, reg.read(addr))
   }
 
   private def updateReg(addr: UInt, data: UInt): Unit = {
     require(addr.getWidth == 5)
     require(data.getWidth == 32)
-    when(addr =/= 0.U) {
-      reg.write(addr - 1.U, data)
-    }
+    when(addr =/= 0.U) { reg.write(addr, data) }
   }
 
   private def rType(in: RTypeIO, op: (UInt, UInt) => UInt): Unit =
@@ -30,13 +28,16 @@ class RiscVSpec extends UntimedModule {
     updateReg(in.rd, op(readReg(in.rs1), in.decodeImm))
 
   val add = fun("add").in(new RTypeIO)(rType(_, (a,b) => a + b))
-  val addi = fun("addi").in(new ITypeIO)(iType(_, (a,b) => a + b))
+  // val addi = fun("addi").in(new ITypeIO)(iType(_, (a,b) => a + b))
 }
 
 class RTypeIO extends Bundle {
   val rs1 = UInt(5.W)
   val rs2 = UInt(5.W)
   val rd = UInt(5.W)
+  def toInstruction(funct7: UInt, funct3: UInt, opcode: UInt): UInt = {
+    funct7.pad(7) ## rs2 ## rs1 ## funct3.pad(3) ## rd ## opcode.pad(7)
+  }
 }
 
 class ITypeIO extends Bundle {
@@ -44,6 +45,9 @@ class ITypeIO extends Bundle {
   val rs1 = UInt(5.W)
   val rd = UInt(5.W)
   def decodeImm: UInt = imm.pad(32).asUInt()
+  def toInstruction(funct3: UInt, opcode: UInt): UInt = {
+    imm ## rs1 ## funct3.pad(3) ## rd ## opcode.pad(7)
+  }
 }
 
 class CompileRiscVSpec extends FlatSpec {
