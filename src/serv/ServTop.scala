@@ -137,7 +137,7 @@ class ServTop(withCsr: Boolean) extends Module {
 
 class TopIO extends Bundle {
   val timerInterrupt = Input(Bool())
-  val rf = Flipped(new RegisterFileIO)
+  val rf = Flipped(new RegisterFileRamIO)
   val ibus = wishbone.WishBoneIO.ReadOnlyInitiator(32)
   val dbus = wishbone.WishBoneIO.Initiator(32)
 }

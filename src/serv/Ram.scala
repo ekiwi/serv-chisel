@@ -100,7 +100,7 @@ class ReadPortIO extends Bundle {
   val data = Output(UInt(1.W))
 }
 
-class RegisterFileIO extends Bundle {
+class RegisterFileRamIO extends Bundle {
   val writeRequest = Input(Bool())
   val readRequest = Input(Bool())
   val ready = Output(Bool())
@@ -116,7 +116,7 @@ class RegisterFilePortIO extends Bundle {
 
 class RamInterfaceIO(val dataWidth: Int, val depth: Int) extends Bundle {
   val ram = Flipped(new RamIO(dataWidth, depth))
-  val rf = new RegisterFileIO()
+  val rf = new RegisterFileRamIO()
 }
 
 class RamIO(val dataWidth: Int, val depth: Int) extends Bundle {

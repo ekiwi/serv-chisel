@@ -14,7 +14,7 @@ class RamInterfaceSpec extends FlatSpec with ChiselScalatestTester  {
   val WithVcd = Seq(WriteVcdAnnotation)
   val NoVcd = Seq()
 
-  def expectRead2(clock: Clock, io: RegisterFileIO, addr: BigInt, data: BigInt) {
+  def expectRead2(clock: Clock, io: RegisterFileRamIO, addr: BigInt, data: BigInt) {
     io.writeRequest.poke(false.B)
     io.readRequest.poke(true.B)
     clock.step()
@@ -29,7 +29,7 @@ class RamInterfaceSpec extends FlatSpec with ChiselScalatestTester  {
     }
   }
 
-  def write2(clock: Clock, io: RegisterFileIO, addr: BigInt, data: BigInt) {
+  def write2(clock: Clock, io: RegisterFileRamIO, addr: BigInt, data: BigInt) {
     io.writeRequest.poke(true.B)
     io.readRequest.poke(false.B)
     clock.step()
@@ -68,7 +68,7 @@ class RamInterfaceSpec extends FlatSpec with ChiselScalatestTester  {
 }
 
 class RegisterFileWrapper(width: Int, csrRegs: Int = 4) extends Module {
-  val io = IO(new RegisterFileIO())
+  val io = IO(new RegisterFileRamIO())
   val interface = Module(new RamInterface(width, csrRegs))
   val ram = Module(new Ram(width, interface.depth))
   io <> interface.io.rf
