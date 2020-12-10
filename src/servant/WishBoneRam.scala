@@ -43,7 +43,7 @@ class WishBoneRam(depth: Int = 256, preload: Seq[BigInt] = List()) extends Modul
       val groupedBytes = bytes.grouped(4)
       val data = groupedBytes.map(_(offset)).toSeq
       annotate(new ChiselAnnotation {
-        override def toFirrtl = MemoryArrayInitAnnotation(m.toTarget, data)
+        override def toFirrtl = MemoryArrayInitAnnotation(m.toAbsoluteTarget, data)
       })
     }
   }
