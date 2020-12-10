@@ -82,7 +82,7 @@ class Ram(width: Int, depth: Int) extends Module {
 
   // initialize memory to zero
   annotate(new ChiselAnnotation {
-    override def toFirrtl = MemoryScalarInitAnnotation(memory.toTarget, 0)
+    override def toFirrtl = MemoryScalarInitAnnotation(memory.toAbsoluteTarget, 0)
   })
 
 //  when(io.writeEnable) { printf(p"mem[0x${Hexadecimal(io.writeAddr)}] <- 0x${Hexadecimal(io.writeData)}\n") }
