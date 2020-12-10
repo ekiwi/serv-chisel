@@ -4,11 +4,11 @@
 
 package servant
 
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 import chisel3.tester._
 
 
-class ServantSpec extends FlatSpec with ChiselScalatestTester  {
+class ServantSpec extends AnyFlatSpec with ChiselScalatestTester  {
 
   it should "elaborate" in {
     val program = Seq.fill(8192)(BigInt(0))

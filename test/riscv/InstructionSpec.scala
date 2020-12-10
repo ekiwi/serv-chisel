@@ -4,14 +4,14 @@
 
 package riscv
 
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 import chisel3.tester._
 import chiseltest.internal.WriteVcdAnnotation
 import chisel3._
 import serv.{ServTopWithRam, ServTopWithRamIO}
 
 /** base class for all instruction specs  */
-abstract class InstructionSpec extends FlatSpec with ChiselScalatestTester {
+abstract class InstructionSpec extends AnyFlatSpec with ChiselScalatestTester {
   val WithVcd = Seq(WriteVcdAnnotation)
   val NoVcd = Seq()
 

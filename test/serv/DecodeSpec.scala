@@ -4,12 +4,12 @@
 
 package serv
 
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 import chisel3.tester._
 import chiseltest.internal.WriteVcdAnnotation
 import chisel3._
 
-class DecodeSpec extends FlatSpec with ChiselScalatestTester  {
+class DecodeSpec extends AnyFlatSpec with ChiselScalatestTester  {
   val WithVcd = Seq(WriteVcdAnnotation)
   val NoVcd = Seq()
 

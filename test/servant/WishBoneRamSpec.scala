@@ -4,13 +4,13 @@
 
 package servant
 
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 import chisel3.tester._
 import chiseltest.internal.{VerilatorBackendAnnotation, WriteVcdAnnotation}
 import chisel3.tester.experimental.TestOptionBuilder._
 import chisel3._
 
-class WishBoneRamSpec extends FlatSpec with ChiselScalatestTester  {
+class WishBoneRamSpec extends AnyFlatSpec with ChiselScalatestTester  {
   val DebugMode: Boolean = false
 
   val annos = if(DebugMode) { Seq(WriteVcdAnnotation) } else { Seq() }

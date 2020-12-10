@@ -4,7 +4,7 @@
 
 package utils
 
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 import chisel3.tester._
 import chisel3._
 
@@ -21,7 +21,7 @@ class SplitTestModule(width: Int, splitAt: Int) extends Module {
   io.lsb := split.lsb
 }
 
-class SplitSpec extends FlatSpec with ChiselScalatestTester {
+class SplitSpec extends AnyFlatSpec with ChiselScalatestTester {
 
   it should "split bits correctly" in {
     test(new SplitTestModule(width = 4, splitAt = 3)) { dut =>

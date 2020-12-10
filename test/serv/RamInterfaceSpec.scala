@@ -4,13 +4,13 @@
 
 package serv
 
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 import chisel3.tester._
 import chisel3._
 import chisel3.tester.experimental.TestOptionBuilder._
 import chiseltest.internal.WriteVcdAnnotation
 
-class RamInterfaceSpec extends FlatSpec with ChiselScalatestTester  {
+class RamInterfaceSpec extends AnyFlatSpec with ChiselScalatestTester  {
   val WithVcd = Seq(WriteVcdAnnotation)
   val NoVcd = Seq()
 

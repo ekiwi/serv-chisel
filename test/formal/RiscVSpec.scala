@@ -4,7 +4,7 @@
 
 package formal
 
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 import paso._
 import chisel3._
 
@@ -50,7 +50,7 @@ class ITypeIO extends Bundle {
   }
 }
 
-class CompileRiscVSpec extends FlatSpec {
+class CompileRiscVSpec extends AnyFlatSpec {
   behavior of "RiscVSpec"
 
   // manye Chisel/Paso errors are only caught when elaborating

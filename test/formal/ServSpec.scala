@@ -4,7 +4,7 @@
 
 package formal
 
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 import paso._
 import chisel3._
 import chisel3.util._
@@ -55,7 +55,7 @@ class ServProof(impl: serv.ServTopWithRam, spec: RiscVSpec) extends ProofCollate
 }
 
 
-class ServSpec extends FlatSpec {
+class ServSpec extends AnyFlatSpec {
   behavior of "serv.ServTopWithRam"
 
   it should "correctly implement the instructions" in {
