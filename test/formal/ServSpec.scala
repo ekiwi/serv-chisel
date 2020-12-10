@@ -18,7 +18,7 @@ class ServProtocols(impl: serv.ServTopWithRam) extends ProtocolSpec[RiscVSpec] {
   // this protocol should work for any reg2reg instruction
   protocol(spec.add)(impl.io) { (clock, dut, in) =>
     dut.timerInterrupt.poke(false.B) // no interrupts
-    dut.dbus.adr.poke(false.B) // no data bus transactions
+    dut.dbus.ack.poke(false.B) // no data bus transactions
     // apply instruction
     dut.ibus.rdt.poke(in.toInstruction(funct7 = 0.U, funct3 = 0.U, opcode = "b0110011".U))
     dut.ibus.ack.poke(true.B)
@@ -58,7 +58,7 @@ class ServProof(impl: serv.ServTopWithRam, spec: RiscVSpec) extends ProofCollate
 class ServSpec extends FlatSpec {
   behavior of "serv.ServTopWithRam"
 
-  it should "correctly implement the instructions" ignore {
+  it should "correctly implement the instructions" in {
     Paso(new ServTopWithRam(true))(new ServProtocols(_)).proof(Paso.MCZ3, new ServProof(_, _))
   }
 }
