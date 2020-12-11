@@ -42,7 +42,8 @@ class RamInterface(width: Int, csrRegs: Int = 4) extends Module {
   io.ram.writeData := Mux(writeTrigger._2, writeData1Buffer, io.rf.ports.write0.data ## writeData0Buffer)
   val writeAddress = Mux(writeTrigger._2, io.rf.ports.write1.addr, io.rf.ports.write0.addr)
   io.ram.writeAddr := writeAddress ## writeCount.split(log2Width).msb
-  io.ram.writeEnable := writeGo && ((writeTrigger._1 && writeEnable0Buffer) || (writeTrigger._2 && writeEnable1Buffer))
+  // change wrt. original serv: disable write port during reset
+  io.ram.writeEnable := !reset.asBool() && writeGo && ((writeTrigger._1 && writeEnable0Buffer) || (writeTrigger._2 && writeEnable1Buffer))
 
   writeData0Buffer := io.rf.ports.write0.data ## writeData0Buffer.split(width-1).lsb.split(1).msb
   writeData1Buffer := io.rf.ports.write1.data ## writeData1Buffer.split(width-0).lsb.split(1).msb
