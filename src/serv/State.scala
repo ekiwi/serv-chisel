@@ -93,8 +93,8 @@ class State(withCsr: Boolean = true) extends Module {
   }
   when(countDone) { init := false.B }
 
+  val irqSync = RegInit(false.B)
   if(withCsr) {
-    val irqSync = RegInit(false.B)
     val misalignedTrapSync = Reg(Bool())
     io.control.trap := io.decode.eOp | pendingIrq | misalignedTrapSync
     io.csr.trapTaken := io.ibus.ack && io.control.trap
