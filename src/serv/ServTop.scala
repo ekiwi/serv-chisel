@@ -11,6 +11,7 @@ import chisel3.util._
 
 class ServTop(withCsr: Boolean) extends Module {
   val io: TopIO = IO(new TopIO)
+  def hasCsr: Boolean = withCsr
 
   val state = Module(new State)
   val decode = Module(new Decode)
