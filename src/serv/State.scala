@@ -16,7 +16,7 @@ class State(withCsr: Boolean = true) extends Module {
 
   // NOTE: in the original sources, the reset value of init is un-specified.
   //       Resetting init to 0 ensures that we can execute an instruction immediately after reset.
-  val init = RegInit(true.B)
+  val init = RegInit(false.B)
   io.count.init := init
 
   // count logic
