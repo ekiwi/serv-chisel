@@ -18,7 +18,9 @@ class ServProtocols(impl: serv.ServTopWithRam) extends ProtocolSpec[RiscVSpec] {
   // this protocol should work for any reg2reg instruction
   protocol(spec.add)(impl.io) { (clock, dut, in) =>
     // wait for instruction bus to be ready
-    do_while(!dut.ibus.cyc.peek(), 64) { clock.step() }
+    // TODO: add back to simplify the proof
+    //do_while(!dut.ibus.cyc.peek(), 64) { clock.step() }
+
     dut.timerInterrupt.poke(false.B) // no interrupts
     dut.dbus.ack.poke(false.B) // no data bus transactions
     // apply instruction
@@ -32,7 +34,7 @@ class ServProtocols(impl: serv.ServTopWithRam) extends ProtocolSpec[RiscVSpec] {
     dut.ibus.ack.poke(false.B)
 
     // cyc will become true once the instruction has executed
-    do_while(!dut.ibus.cyc.peek(), 64) {
+    do_while(!dut.ibus.cyc.peek(), 70) {
       clock.step()
     }
 
@@ -54,15 +56,23 @@ class ServProof(impl: serv.ServTopWithRam, spec: RiscVSpec) extends ProofCollate
   invariants { impl =>
     // RAM Interface
     assert(impl.ramInterface.writeCount === 0.U)
+    assert(!impl.ramInterface.readRequestBuffer)
+    assert(!impl.ramInterface.rgnt)
 
     // State
     assert(impl.top.state.count === 0.U)
     assert(impl.top.state.countR === 1.U)
     assert(!impl.top.state.stageTwoPending)
     assert(!impl.top.state.controlJump)
+    assert(!impl.top.state.init)
+    assert(!impl.top.state.countEnabled)
+    assert(!impl.top.state.stageTwoRequest)
+    if(impl.top.hasCsr) {
+      assert(!impl.top.state.irqSync)
+    }
 
     // Control
-    // assert(impl.top.control.enablePc)
+    assert(impl.top.control.enablePc)
   }
 }
 
@@ -72,6 +82,10 @@ class ServSpec extends AnyFlatSpec {
 
   it should "correctly implement the instructions" ignore {
     val dbg = DebugOptions(printMCProgress = true)
-    Paso(new ServTopWithRam(true))(new ServProtocols(_)).proof(Paso.MCCVC4, dbg, new ServProof(_, _))
+    Paso(new ServTopWithRam(true))(new ServProtocols(_)).proof(Paso.MCBotr, dbg, new ServProof(_, _))
+  }
+
+  it should "bmc?" ignore {
+    Paso(new ServTopWithRam(true))(new ServProtocols(_)).bmc(100)
   }
 }
