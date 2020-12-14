@@ -14,7 +14,7 @@ import chisel3.internal.BundleLitBinding
 class State(withCsr: Boolean = true) extends Module {
   val io = IO(new StateIO)
 
-  val init = Reg(Bool())
+  val init = RegInit(true.B)
   io.count.init := init
 
   // count logic
