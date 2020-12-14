@@ -17,6 +17,8 @@ class ServProtocols(impl: serv.ServTopWithRam) extends ProtocolSpec[RiscVSpec] {
 
   // this protocol should work for any reg2reg instruction
   protocol(spec.add)(impl.io) { (clock, dut, in) =>
+    // wait for instruction bus to be ready
+    do_while(!dut.ibus.cyc.peek(), 64) { clock.step() }
     dut.timerInterrupt.poke(false.B) // no interrupts
     dut.dbus.ack.poke(false.B) // no data bus transactions
     // apply instruction
@@ -50,7 +52,17 @@ class ServProof(impl: serv.ServTopWithRam, spec: RiscVSpec) extends ProofCollate
   }
 
   invariants { impl =>
+    // RAM Interface
+    assert(impl.ramInterface.writeCount === 0.U)
 
+    // State
+    assert(impl.top.state.count === 0.U)
+    assert(impl.top.state.countR === 1.U)
+    assert(!impl.top.state.stageTwoPending)
+    assert(!impl.top.state.controlJump)
+
+    // Control
+    // assert(impl.top.control.enablePc)
   }
 }
 
@@ -58,7 +70,8 @@ class ServProof(impl: serv.ServTopWithRam, spec: RiscVSpec) extends ProofCollate
 class ServSpec extends AnyFlatSpec {
   behavior of "serv.ServTopWithRam"
 
-  it should "correctly implement the instructions" in {
-    Paso(new ServTopWithRam(true))(new ServProtocols(_)).proof(Paso.MCZ3, new ServProof(_, _))
+  it should "correctly implement the instructions" ignore {
+    val dbg = DebugOptions(printMCProgress = true)
+    Paso(new ServTopWithRam(true))(new ServProtocols(_)).proof(Paso.MCCVC4, dbg, new ServProof(_, _))
   }
 }
