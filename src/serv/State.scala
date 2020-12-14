@@ -22,7 +22,7 @@ class State(withCsr: Boolean = true) extends Module {
   // count logic
   val countDone = Reg(Bool())
   io.count.done := countDone
-  val countEnabled = Reg(Bool())
+  val countEnabled = RegInit(false.B)
   io.count.enabled := countEnabled
   when(io.ram.ready) { countEnabled := true.B }
   when(countDone) { countEnabled := false.B }
@@ -36,7 +36,7 @@ class State(withCsr: Boolean = true) extends Module {
   countDone := (count === 7.U) && countR(2)
 
   // Need a strobe for the first cycle in the IDLE state after INIT
-  val stageTwoRequest = RegNext(countDone && init)
+  val stageTwoRequest = RegNext(countDone && init, init = false.B)
 
   // update PC in RUN or TRAP states
   io.control.pcEnable := countEnabled & !init
@@ -94,7 +94,7 @@ class State(withCsr: Boolean = true) extends Module {
   when(countDone) { init := false.B }
 
   if(withCsr) {
-    val irqSync = Reg(Bool())
+    val irqSync = RegInit(false.B)
     val misalignedTrapSync = Reg(Bool())
     io.control.trap := io.decode.eOp | pendingIrq | misalignedTrapSync
     io.csr.trapTaken := io.ibus.ack && io.control.trap
