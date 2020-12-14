@@ -14,6 +14,8 @@ import chisel3.internal.BundleLitBinding
 class State(withCsr: Boolean = true) extends Module {
   val io = IO(new StateIO)
 
+  // NOTE: in the original sources, the reset value of init is un-specified.
+  //       Resetting init to 0 ensures that we can execute an instruction immediately after reset.
   val init = RegInit(true.B)
   io.count.init := init
 
