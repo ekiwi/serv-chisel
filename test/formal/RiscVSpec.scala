@@ -28,6 +28,7 @@ class RiscVSpec extends UntimedModule {
     updateReg(in.rd, op(readReg(in.rs1), in.decodeImm))
 
   val add = fun("add").in(new RTypeIO)(rType(_, (a,b) => a + b))
+  val sub = fun("sub").in(new RTypeIO)(rType(_, (a,b) => a - b))
   val addi = fun("addi").in(new ITypeIO)(iType(_, (a,b) => a + b))
 }
 
