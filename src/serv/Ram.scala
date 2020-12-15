@@ -26,12 +26,12 @@ class RamInterface(width: Int, csrRegs: Int = 4) extends Module {
 
   // Write Side
   val writeCount = RegInit(0.U(5.W))
-  val writeGo = Reg(Bool())
+  val writeGo = RegInit(false.B)
   val writeData0Buffer = Reg(UInt((width - 1).W))
   val writeData1Buffer = Reg(UInt(width.W))
   val writeEnable0Buffer = RegNext(io.rf.ports.write0.enable)
   val writeEnable1Buffer = RegNext(io.rf.ports.write1.enable)
-  val writeRequestBuffer = RegNext(io.rf.writeRequest || rgnt)
+  val writeRequestBuffer = RegNext(io.rf.writeRequest || rgnt, init = false.B)
 
   val writeTrigger = if(width == 2) {
     (!writeCount(0), writeCount(0))

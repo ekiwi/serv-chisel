@@ -34,7 +34,7 @@ class ServProtocols(impl: serv.ServTopWithRam) extends ProtocolSpec[RiscVSpec] {
     dut.ibus.ack.poke(false.B)
 
     // cyc will become true once the instruction has executed
-    do_while(!dut.ibus.cyc.peek(), 70) {
+    do_while(!dut.ibus.cyc.peek(), 34) {
       clock.step()
     }
 
@@ -46,7 +46,7 @@ class ServProtocols(impl: serv.ServTopWithRam) extends ProtocolSpec[RiscVSpec] {
 class ServProof(impl: serv.ServTopWithRam, spec: RiscVSpec) extends ProofCollateral(impl, spec) {
   // map data in the register file to the actual RAM
   mapping { (impl, spec) =>
-    forall(1 until 32) { ii =>
+    forall(0 until 32) { ii =>
       // read and combine 2bit values from ram
       val parts = (0 until 16).reverse.map(jj => impl.ram.memory.read(ii * 16.U + jj.U))
       assert(spec.reg.read(ii) === Cat(parts))
@@ -58,6 +58,9 @@ class ServProof(impl: serv.ServTopWithRam, spec: RiscVSpec) extends ProofCollate
     assert(impl.ramInterface.writeCount === 0.U)
     assert(!impl.ramInterface.readRequestBuffer)
     assert(!impl.ramInterface.rgnt)
+    // the following two assumptions do not seem necessary for BMC to work ...
+    assert(!impl.ramInterface.writeGo)
+    assert(!impl.ramInterface.writeRequestBuffer)
 
     // State
     assert(impl.top.state.count === 0.U)
