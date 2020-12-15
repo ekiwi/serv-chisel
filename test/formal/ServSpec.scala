@@ -8,15 +8,15 @@ import org.scalatest.flatspec.AnyFlatSpec
 import paso._
 import chisel3._
 import chisel3.util._
-import serv.ServTopWithRam
+import serv.{ServTopWithRam, ServTopWithRamIO}
 
 class ServProtocols(impl: serv.ServTopWithRam) extends ProtocolSpec[RiscVSpec] {
   val spec = new RiscVSpec
 
   override val stickyInputs = true
 
-  // this protocol should work for any reg2reg instruction
-  protocol(spec.add)(impl.io) { (clock, dut, in) =>
+
+  private def noMemProtocol(clock: Clock, dut: ServTopWithRamIO, instruction: UInt, maxCycles: Int): Unit = {
     // wait for instruction bus to be ready
     // TODO: add back to simplify the proof
     //do_while(!dut.ibus.cyc.peek(), 64) { clock.step() }
@@ -24,7 +24,7 @@ class ServProtocols(impl: serv.ServTopWithRam) extends ProtocolSpec[RiscVSpec] {
     dut.timerInterrupt.poke(false.B) // no interrupts
     dut.dbus.ack.poke(false.B) // no data bus transactions
     // apply instruction
-    dut.ibus.rdt.poke(in.toInstruction(funct7 = 0.U, funct3 = 0.U, opcode = "b0110011".U))
+    dut.ibus.rdt.poke(instruction)
     dut.ibus.ack.poke(true.B)
     dut.ibus.cyc.expect(true.B) // transaction should be immediately acknowledged
     clock.step()
@@ -34,12 +34,16 @@ class ServProtocols(impl: serv.ServTopWithRam) extends ProtocolSpec[RiscVSpec] {
     dut.ibus.ack.poke(false.B)
 
     // cyc will become true once the instruction has executed
-    do_while(!dut.ibus.cyc.peek(), 34) {
+    do_while(!dut.ibus.cyc.peek(), maxCycles) {
       clock.step()
     }
 
     // one cycle with cyc high
     clock.step()
+  }
+
+  protocol(spec.add)(impl.io) { (clock, dut, in) =>
+    noMemProtocol(clock, dut, in.toInstruction(funct7 = 0.U, funct3 = 0.U, opcode = "b0110011".U), maxCycles = 34)
   }
 }
 
