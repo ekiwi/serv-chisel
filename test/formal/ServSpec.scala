@@ -62,6 +62,9 @@ class ServProof(impl: serv.ServTopWithRam, spec: RiscVSpec) extends ProofCollate
     assert(!impl.ramInterface.writeGo)
     assert(!impl.ramInterface.writeRequestBuffer)
 
+    // register 0 is always zero
+    forall(0 until 16) { ii => assert(impl.ram.memory.read(ii) === 0.U) }
+
     // State
     assert(impl.top.state.count === 0.U)
     assert(impl.top.state.countR === 1.U)
@@ -83,12 +86,12 @@ class ServProof(impl: serv.ServTopWithRam, spec: RiscVSpec) extends ProofCollate
 class ServSpec extends AnyFlatSpec {
   behavior of "serv.ServTopWithRam"
 
-  it should "correctly implement the instructions" ignore {
-    val dbg = DebugOptions(printMCProgress = true)
+  it should "correctly implement the instructions" in {
+    val dbg = DebugOptions(printMCProgress = true, printInductionSys = false)
     Paso(new ServTopWithRam(true))(new ServProtocols(_)).proof(Paso.MCBotr, dbg, new ServProof(_, _))
   }
 
-  it should "bmc?" ignore {
+  it should "bmc?" in {
     Paso(new ServTopWithRam(true))(new ServProtocols(_)).bmc(100)
   }
 }
