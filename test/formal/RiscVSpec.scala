@@ -28,7 +28,7 @@ class RiscVSpec extends UntimedModule {
     updateReg(in.rd, op(readReg(in.rs1), in.decodeImm))
 
   val add = fun("add").in(new RTypeIO)(rType(_, (a,b) => a + b))
-  // val addi = fun("addi").in(new ITypeIO)(iType(_, (a,b) => a + b))
+  val addi = fun("addi").in(new ITypeIO)(iType(_, (a,b) => a + b))
 }
 
 class RTypeIO extends Bundle {
@@ -46,7 +46,7 @@ class ITypeIO extends Bundle {
   val rd = UInt(5.W)
   def decodeImm: UInt = imm.pad(32).asUInt()
   def toInstruction(funct3: UInt, opcode: UInt): UInt = {
-    imm ## rs1 ## funct3.pad(3) ## rd ## opcode.pad(7)
+    imm.asUInt() ## rs1 ## funct3.pad(3) ## rd ## opcode.pad(7)
   }
 }
 

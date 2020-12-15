@@ -45,6 +45,10 @@ class ServProtocols(impl: serv.ServTopWithRam) extends ProtocolSpec[RiscVSpec] {
   protocol(spec.add)(impl.io) { (clock, dut, in) =>
     noMemProtocol(clock, dut, in.toInstruction(funct7 = 0.U, funct3 = 0.U, opcode = "b0110011".U), maxCycles = 34)
   }
+
+  protocol(spec.addi)(impl.io) { (clock, dut, in) =>
+    noMemProtocol(clock, dut, in.toInstruction(funct3 = 0.U, opcode = "b0010011".U), maxCycles = 34)
+  }
 }
 
 class ServProof(impl: serv.ServTopWithRam, spec: RiscVSpec) extends ProofCollateral(impl, spec) {
