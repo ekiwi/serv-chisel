@@ -14,13 +14,15 @@ import chisel3.internal.BundleLitBinding
 class State(withCsr: Boolean = true) extends Module {
   val io = IO(new StateIO)
 
-  val init = Reg(Bool())
+  // NOTE: in the original sources, the reset value of init is un-specified.
+  //       Resetting init to 0 ensures that we can execute an instruction immediately after reset.
+  val init = RegInit(false.B)
   io.count.init := init
 
   // count logic
   val countDone = Reg(Bool())
   io.count.done := countDone
-  val countEnabled = Reg(Bool())
+  val countEnabled = RegInit(false.B)
   io.count.enabled := countEnabled
   when(io.ram.ready) { countEnabled := true.B }
   when(countDone) { countEnabled := false.B }
@@ -34,7 +36,7 @@ class State(withCsr: Boolean = true) extends Module {
   countDone := (count === 7.U) && countR(2)
 
   // Need a strobe for the first cycle in the IDLE state after INIT
-  val stageTwoRequest = RegNext(countDone && init)
+  val stageTwoRequest = RegNext(countDone && init, init = false.B)
 
   // update PC in RUN or TRAP states
   io.control.pcEnable := countEnabled & !init
@@ -91,8 +93,8 @@ class State(withCsr: Boolean = true) extends Module {
   }
   when(countDone) { init := false.B }
 
+  val irqSync = RegInit(false.B)
   if(withCsr) {
-    val irqSync = Reg(Bool())
     val misalignedTrapSync = Reg(Bool())
     io.control.trap := io.decode.eOp | pendingIrq | misalignedTrapSync
     io.csr.trapTaken := io.ibus.ack && io.control.trap

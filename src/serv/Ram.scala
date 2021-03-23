@@ -26,12 +26,12 @@ class RamInterface(width: Int, csrRegs: Int = 4) extends Module {
 
   // Write Side
   val writeCount = RegInit(0.U(5.W))
-  val writeGo = Reg(Bool())
+  val writeGo = RegInit(false.B)
   val writeData0Buffer = Reg(UInt((width - 1).W))
   val writeData1Buffer = Reg(UInt(width.W))
   val writeEnable0Buffer = RegNext(io.rf.ports.write0.enable)
   val writeEnable1Buffer = RegNext(io.rf.ports.write1.enable)
-  val writeRequestBuffer = RegNext(io.rf.writeRequest || rgnt)
+  val writeRequestBuffer = RegNext(io.rf.writeRequest || rgnt, init = false.B)
 
   val writeTrigger = if(width == 2) {
     (!writeCount(0), writeCount(0))
@@ -42,7 +42,8 @@ class RamInterface(width: Int, csrRegs: Int = 4) extends Module {
   io.ram.writeData := Mux(writeTrigger._2, writeData1Buffer, io.rf.ports.write0.data ## writeData0Buffer)
   val writeAddress = Mux(writeTrigger._2, io.rf.ports.write1.addr, io.rf.ports.write0.addr)
   io.ram.writeAddr := writeAddress ## writeCount.split(log2Width).msb
-  io.ram.writeEnable := writeGo && ((writeTrigger._1 && writeEnable0Buffer) || (writeTrigger._2 && writeEnable1Buffer))
+  // change wrt. original serv: disable write port during reset
+  io.ram.writeEnable := !reset.asBool() && writeGo && ((writeTrigger._1 && writeEnable0Buffer) || (writeTrigger._2 && writeEnable1Buffer))
 
   writeData0Buffer := io.rf.ports.write0.data ## writeData0Buffer.split(width-1).lsb.split(1).msb
   writeData1Buffer := io.rf.ports.write1.data ## writeData1Buffer.split(width-0).lsb.split(1).msb
@@ -82,7 +83,7 @@ class Ram(width: Int, depth: Int) extends Module {
 
   // initialize memory to zero
   annotate(new ChiselAnnotation {
-    override def toFirrtl = MemoryScalarInitAnnotation(memory.toTarget, 0)
+    override def toFirrtl = MemoryScalarInitAnnotation(memory.toAbsoluteTarget, 0)
   })
 
 //  when(io.writeEnable) { printf(p"mem[0x${Hexadecimal(io.writeAddr)}] <- 0x${Hexadecimal(io.writeData)}\n") }
