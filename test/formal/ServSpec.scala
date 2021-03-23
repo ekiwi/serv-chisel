@@ -55,10 +55,10 @@ class ServProof(impl: serv.ServTopWithRam, spec: RiscVSpec) extends ProofCollate
 }
 
 
-class ServSpec extends AnyFlatSpec {
+class ServSpec extends AnyFlatSpec with PasoTester {
   behavior of "serv.ServTopWithRam"
 
   it should "correctly implement the instructions" ignore {
-    Paso(new ServTopWithRam(true))(new ServProtocols(_)).proof(Paso.MCZ3, new ServProof(_, _))
+    test(new ServTopWithRam(true))(new ServProtocols(_)).proof(Paso.MCZ3, new ServProof(_, _))
   }
 }

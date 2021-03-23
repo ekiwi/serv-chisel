@@ -13,10 +13,10 @@ val ghurl = "https://maven.pkg.github.com/ekiwi/paso"
 credentials ++= sys.env.get("GITHUB_TOKEN").map(t => Credentials(ghrealm, "maven.pkg.github.com", "_", t))
 resolvers += s"Github Package Registry at $ghurl" at ghurl
 
-libraryDependencies += "edu.berkeley.cs" %% "chisel3" % "3.4.1"
-libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.3.1" % Test
-libraryDependencies += "edu.berkeley.cs" %% "paso" % "0.4.1-14-91c9e7ef" % Test
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.2" % Test
+libraryDependencies += "edu.berkeley.cs" %% "chisel3" % "3.5-SNAPSHOT"
+libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.5-SNAPSHOT" % Test
+libraryDependencies += "edu.berkeley.cs" %% "paso" % "0.5.0-165-9bb96bc0" % Test
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.6" % Test
 
 scalaSource in Compile := baseDirectory.value / "src"
 scalaSource in Test := baseDirectory.value / "test"
