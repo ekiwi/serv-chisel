@@ -19,7 +19,7 @@ class ComplianceTest extends AnyFlatSpec with ChiselScalatestTester {
   val WithVerilator = Seq(VerilatorBackendAnnotation)
 
 
-  it should "pass the ADD test" in {
+  it should "pass the ADD test" ignore {
     val program = ComplianceTest.load("ADD")
     val memSize = 8192
     test(new Servant(memSize, program)).withAnnotations(WithVerilator ++ WithVcd) { dut =>
