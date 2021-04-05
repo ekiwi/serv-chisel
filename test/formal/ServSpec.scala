@@ -63,6 +63,7 @@ class ServProof(impl: serv.ServTopWithRam, spec: RiscVSpec) extends ProofCollate
       val parts = (0 until 16).reverse.map(jj => impl.ram.memory.read(ii * 16.U + jj.U))
       assert(spec.reg.read(ii) === Cat(parts))
     }
+    assert(spec.pc === impl.top.control.pc)
   }
 
   invariants { impl =>
