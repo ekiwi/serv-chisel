@@ -10,7 +10,7 @@ import chisel3._
 import chisel3.util._
 
 class RiscVSpec extends UntimedModule {
-  val pc = UInt(32.W)
+  val pc = RegInit(0.U(32.W))
   val reg = Mem(32, UInt(32.W)) // reg(0) remains unused
 
   private def incPC(): Unit = { pc := pc + 1.U}
@@ -36,11 +36,10 @@ class RiscVSpec extends UntimedModule {
     incPC()
   }
 
-  //val add = fun("add").in(new RTypeIO)(rType(_, (a,b) => a + b))
-  //val sub = fun("sub").in(new RTypeIO)(rType(_, (a,b) => a - b))
-  //val addi = fun("addi").in(new ITypeIO)(iType(_, (a,b) => a + b))
-
-  /*
+  val add = fun("add").in(new RTypeIO)(rType(_, (a,b) => a + b))
+  val sub = fun("sub").in(new RTypeIO)(rType(_, (a,b) => a - b))
+  val addi = fun("addi").in(new ITypeIO)(iType(_, (a,b) => a + b))
+/*
   val loadWord = fun("loadWord").in(new LoadIO).out(UInt(32.W)) { (in, loadAddr) =>
     // calculate load address and return it
     val addr = readReg(in.rs1) + in.decodeImm
@@ -50,6 +49,8 @@ class RiscVSpec extends UntimedModule {
     loadAddr := addr
     // load value into destination register
     updateReg(in.rd, in.value)
+    // update the PC
+    incPC()
   }
 
   val loadHalf = fun("loadHalf").in(new LoadIO).out(UInt(32.W)) { (in, loadAddr) =>
@@ -65,9 +66,9 @@ class RiscVSpec extends UntimedModule {
     val value = alignedValue.asSInt().pad(32).asUInt()
     // load value into destination register
     updateReg(in.rd, value)
+    // update the PC
+    incPC()
   }
-  
-  */
 
   val loadByte = fun("loadByte").in(new LoadIO).out(UInt(32.W)) { (in, loadAddr) =>
     // calculate load address and return it
@@ -81,7 +82,10 @@ class RiscVSpec extends UntimedModule {
     val value = alignedValue.asSInt().pad(32).asUInt()
     // load value into destination register
     updateReg(in.rd, value)
+    // update the PC
+    incPC()
   }
+ */
 }
 
 class RTypeIO extends Bundle {
@@ -110,9 +114,10 @@ class LoadIO extends ITypeIO {
 class CompileRiscVSpec extends AnyFlatSpec {
   behavior of "RiscVSpec"
 
-  // manye Chisel/Paso errors are only caught when elaborating
+  // many Chisel/Paso errors are only caught when elaborating
   it should "correctly elaborate" in {
     val spec = UntimedModule(new RiscVSpec)
+    val fir = spec.getFirrtl
   }
 
 }

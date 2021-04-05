@@ -42,7 +42,7 @@ class ServProtocols(impl: serv.ServTopWithRam) extends ProtocolSpec[RiscVSpec] {
     clock.step()
   }
 
-/*
+
   protocol(spec.add)(impl.io) { (clock, dut, in) =>
     noMemProtocol(clock, dut, in.toInstruction(funct7 = 0.U, funct3 = 0.U, opcode = "b0110011".U), maxCycles = 34)
   }
@@ -53,7 +53,6 @@ class ServProtocols(impl: serv.ServTopWithRam) extends ProtocolSpec[RiscVSpec] {
   protocol(spec.addi)(impl.io) { (clock, dut, in) =>
     noMemProtocol(clock, dut, in.toInstruction(funct3 = 0.U, opcode = "b0010011".U), maxCycles = 34)
   }
-  */
 }
 
 class ServProof(impl: serv.ServTopWithRam, spec: RiscVSpec) extends ProofCollateral(impl, spec) {
@@ -100,11 +99,13 @@ class ServSpec extends AnyFlatSpec with PasoTester {
   behavior of "serv.ServTopWithRam"
 
   it should "correctly implement the instructions" in {
-    val dbg = DebugOptions(printMCProgress = true, printInductionSys = false)
-    test(new ServTopWithRam(true))(new ServProtocols(_)).proof(Paso.MCBotr, dbg, new ServProof(_, _))
+    val dbg = DebugOptions(printMCProgress = false, printInductionSys = false, printBaseSys = false)
+    val opt = Paso.MCBotr.copy(strategy = ProofIsolatedMethods)
+    test(new ServTopWithRam(true))(new ServProtocols(_)).proof(opt, dbg, new ServProof(_, _))
   }
 
   it should "bmc?" in {
-    test(new ServTopWithRam(true))(new ServProtocols(_)).bmc(100)
+    val dbg = DebugOptions(traceUntimedElaboration = false)
+    test(new ServTopWithRam(true))(new ServProtocols(_)).bmc(Paso.Default, dbg, 100)
   }
 }
