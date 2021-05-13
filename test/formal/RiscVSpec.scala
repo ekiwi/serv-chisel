@@ -13,7 +13,7 @@ class RiscVSpec extends UntimedModule {
   val pc = RegInit(0.U(32.W))
   val reg = Mem(32, UInt(32.W)) // reg(0) remains unused
 
-  private def incPC(): Unit = { pc := pc + 1.U}
+  private def incPC(): Unit = { pc := pc + 4.U }
 
   private def readReg(addr: UInt): UInt = {
     require(addr.getWidth == 5)
