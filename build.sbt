@@ -15,7 +15,7 @@ resolvers += s"Github Package Registry at $ghurl" at ghurl
 
 libraryDependencies += "edu.berkeley.cs" %% "chisel3" % "3.5-SNAPSHOT"
 libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.5-SNAPSHOT" % Test
-libraryDependencies += "edu.berkeley.cs" %% "paso" % "0.5.0-165-9bb96bc0" % Test
+libraryDependencies += "edu.berkeley.cs" %% "paso" % "0.5.2-20-45c83373" % Test
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.6" % Test
 addCompilerPlugin("edu.berkeley.cs" % "chisel3-plugin" % "3.5-SNAPSHOT" cross CrossVersion.full)
 
