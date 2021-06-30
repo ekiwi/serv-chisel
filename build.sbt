@@ -17,6 +17,7 @@ libraryDependencies += "edu.berkeley.cs" %% "chisel3" % "3.5-SNAPSHOT"
 libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.5-SNAPSHOT" % Test
 libraryDependencies += "edu.berkeley.cs" %% "paso" % "0.5.0-165-9bb96bc0" % Test
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.6" % Test
+addCompilerPlugin("edu.berkeley.cs" % "chisel3-plugin" % "3.5-SNAPSHOT" cross CrossVersion.full)
 
 scalaSource in Compile := baseDirectory.value / "src"
 scalaSource in Test := baseDirectory.value / "test"
