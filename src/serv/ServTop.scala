@@ -9,7 +9,7 @@ package serv
 import chisel3._
 import chisel3.util._
 
-class ServTop(withCsr: Boolean) extends Module {
+class ServTop(withCsr: Boolean, debug: Boolean = false) extends Module {
   val io: TopIO = IO(new TopIO)
 
   val state = Module(new State)
@@ -124,15 +124,17 @@ class ServTop(withCsr: Boolean) extends Module {
   }
 
   // debug printing
-  val monitor: InstructionMonitor = Module(new InstructionMonitor with InstructionPrinter)
-  monitor.io.pcEnable := state.io.control.pcEnable
-  monitor.io.countDone := state.io.count.done
-  monitor.io.init := state.io.count.init
-  monitor.io.rfReady := io.rf.ready
-  monitor.io.ibus := io.ibus
-  monitor.io.dbus := io.dbus
-  monitor.io.rf := rfInterface.io
-  monitor.io.decode := decode.io.state
+  if(debug) {
+    val monitor: InstructionMonitor = Module(new InstructionMonitor with InstructionPrinter)
+    monitor.io.pcEnable := state.io.control.pcEnable
+    monitor.io.countDone := state.io.count.done
+    monitor.io.init := state.io.count.init
+    monitor.io.rfReady := io.rf.ready
+    monitor.io.ibus := io.ibus
+    monitor.io.dbus := io.dbus
+    monitor.io.rf := rfInterface.io
+    monitor.io.decode := decode.io.state
+  }
 }
 
 class TopIO extends Bundle {

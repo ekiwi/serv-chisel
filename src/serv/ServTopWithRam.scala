@@ -10,11 +10,11 @@ import chisel3._
 import chisel3.util._
 
 // aka serv_rf_top
-class ServTopWithRam(withCsr: Boolean, rfWidth: Int = 2) extends Module {
+class ServTopWithRam(withCsr: Boolean, rfWidth: Int = 2, debug: Boolean = false) extends Module {
   val io: ServTopWithRamIO = IO(new ServTopWithRamIO)
   val csrRegs = if(withCsr) 4 else 0
 
-  val top = Module(new ServTop(withCsr))
+  val top = Module(new ServTop(withCsr, debug=debug))
   val ramInterface = Module(new RamInterface(rfWidth, csrRegs))
   val ramDepth = 32 * (32 + csrRegs) / rfWidth
   val ram = Module(new Ram(rfWidth, ramDepth))
