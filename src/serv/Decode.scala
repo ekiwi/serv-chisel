@@ -142,7 +142,8 @@ class Decode extends Module {
   val aluSlt = funct3(2,1) === 1.U
   val aluShift = funct3(1,0) === 1.U
   val aluAddSub = funct3 === 0.U
-  io.alu.rdSelect := Result(aluBool ## aluSlt ## aluShift ## aluAddSub)
+  val (rdSelect, rdSelectValid) = Result.safe(aluBool ## aluSlt ## aluShift ## aluAddSub)
+  io.alu.rdSelect := rdSelect
 
   io.mem.cmd := opcode(3)
   io.mem.signed := !funct3(2)
