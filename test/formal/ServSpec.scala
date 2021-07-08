@@ -101,7 +101,7 @@ class ServSpec extends AnyFlatSpec with PasoTester {
 
   it should "correctly implement the instructions" in {
     val dbg = DebugOptions(printMCProgress = false, printInductionSys = false, printBaseSys = false)
-    val opt = Paso.MCBotr //.copy(strategy = ProofIsolatedMethods)
+    val opt = Paso.MCBotr.copy(strategy = ProofIsolatedMethods)
     test(new ServTopWithRam(true))(new ServProtocols(_)).proof(opt, dbg, new ServProof(_, _))
   }
 
